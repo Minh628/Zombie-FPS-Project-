@@ -1,0 +1,33 @@
+# .gitignore - Bỏ qua các file rác, file DB nội bộ khi đẩy code lên Git
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# --- Virtual Environment ---
+venv/
+env/
+.env/
+
+# --- Database (file CSDL local) ---
+data/*.db
+data/*.json
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Ursina cache ---
+*.bam

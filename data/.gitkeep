@@ -1,0 +1,2 @@
+# Thư mục này chứa file database thực tế (VD: save_data.db)
+# File .db và .json trong đây sẽ được gitignore

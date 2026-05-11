@@ -1,0 +1,5 @@
+# requirements.txt - Liệt kê các thư viện cần cài đặt
+# Cài đặt: pip install -r requirements.txt
+
+ursina
+panda3d
