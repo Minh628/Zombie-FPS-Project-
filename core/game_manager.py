@@ -238,7 +238,3 @@ class GameManager(Entity):
                 self.pause_game()
             elif self.state == GameState.PAUSED:
                 self.resume_game()
-            if self.state == GameState.PLAYING:
-                self.pause_game()
-            elif self.state == GameState.PAUSED:
-                self.resume_game()
