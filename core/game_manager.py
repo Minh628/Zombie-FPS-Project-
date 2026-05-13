@@ -1,16 +1,14 @@
-# game_manager.py - Quản lý state của game (Play, Pause, Game Over)
-# GameManager kế thừa Entity để Ursina tự gọi update() và input() mỗi frame.
-# Đây là nơi DUY NHẤT khởi tạo và điều phối tất cả module trong game.
+# game_manager.py - Đạo diễn game: CHỈ gọi và điều phối, KHÔNG xử lý chi tiết.
+# - Vũ khí → Player tự lo
+# - Wave/Spawn → Level tự lo
+# - UI → UIManager tự lo
+# - GameManager chỉ hô: BẮT ĐẦU! TẠM DỪNG! KẾT THÚC!
 from enum import Enum
 from ursina import *
-import random
 import time as _time
 
-from core.config import *
 from entities.player import Player
-from entities.weapon import Weapon
-from ui.main_menu import MainMenu
-from ui.hud import HUD
+from ui.ui_manager import UIManager
 from levels.level_01 import Level01
 from database.db_manager import DBManager
 
@@ -25,349 +23,222 @@ class GameState(Enum):
 
 class GameManager(Entity):
     """
-    Quản lý trạng thái tổng thể của game.
-    Kế thừa Entity để Ursina tự động gọi update() và input().
-    Tự khởi tạo TẤT CẢ module: Player, Weapon, HUD, Menu, Level, Database.
+    Đạo diễn game - chỉ điều phối, không xử lý logic chi tiết.
+    Mỗi module tự lo việc của mình, GameManager chỉ hô và nối dây.
     """
 
     def __init__(self):
         super().__init__()
 
-        # --- Trạng thái game ---
         self.state = GameState.MAIN_MENU
         self.score = 0
-        self.wave = 1
         self.zombies_killed = 0
         self.player_name = 'Player'
         self.play_start_time = 0
         self.play_time = 0
 
-        # --- Hệ thống spawn zombie ---
-        self.active_zombies = []
-        self.zombies_per_wave = 5
-        self.zombies_spawned_this_wave = 0
-        self.zombies_to_spawn = 0
-        self.spawn_timer = 0
-        self.spawn_interval = 3.0
-        self.wave_transition_timer = 0
-        self.is_wave_transitioning = False
-
-        # ============================
-        # KHỞI TẠO TẤT CẢ MODULE
-        # ============================
-
-        # 1. Database
+        # === Khởi tạo các "diễn viên" ===
         self.db = DBManager()
         self.db.connect()
 
-        # 2. Level (map, ánh sáng, spawn points)
         self.level = Level01()
 
-        # 3. Player (ẩn cho đến khi bắt đầu game)
         self.player = Player()
         self.player.position = Vec3(0, 1, 0)
         self.player.enabled = False
 
-        # 4. Weapon (ẩn cho đến khi bắt đầu game)
-        self.weapon = Weapon(self.player)
-        self.weapon.enabled = False
+        self.ui = UIManager()
 
-        # 5. HUD (ẩn cho đến khi bắt đầu game)
-        self.hud = HUD()
+        # === Nối dây callbacks ===
+        self._connect_callbacks()
 
-        # 6. Main Menu (hiện ngay)
-        self.menu = MainMenu()
-
-        # ============================
-        # KẾT NỐI CALLBACKS
-        # ============================
-        self._setup_callbacks()
-
-        # Load bảng xếp hạng ban đầu
+        # === Load dữ liệu ban đầu ===
         self._load_leaderboard()
 
-        # Hiển thị menu, mở khóa chuột
-        self.menu.show()
-        mouse.locked = False
+        # === Hiển thị menu ===
+        self.ui.switch_to_menu_mode()
 
-        print('[GameManager] Initialized all modules.')
+        print('[GameManager] Ready.')
 
-    def _setup_callbacks(self):
-        """Kết nối tất cả callbacks giữa các module."""
-        # Player -> HUD
-        self.player.on_health_changed = self.hud.update_health
+    # ==============================================================
+    # NỐI DÂY (callbacks giữa các module)
+    # ==============================================================
+
+    def _connect_callbacks(self):
+        """Nối dây sự kiện giữa các module."""
+        # Player → UI (máu)
+        self.player.on_health_changed = self.ui.update_health
         self.player.on_death = self._on_player_death
 
-        # Weapon -> HUD
-        self.weapon.on_ammo_changed = self.hud.update_ammo
+        # Player → UI (vũ khí thay đổi)
+        self.player.on_weapon_changed = self._on_weapon_changed
 
-        # Menu -> Start Game
-        self.menu.on_start_game = self.start_game
+        # Level → GameManager (wave events)
+        self.level.on_zombie_killed = self._on_zombie_killed
+        self.level.on_wave_start = self._on_wave_start
+        self.level.on_wave_complete = self._on_wave_complete
 
-        # Pause Menu buttons
-        self.hud.resume_btn.on_click = self.resume_game
-        self.hud.pause_restart_btn.on_click = self.restart_game
-        self.hud.pause_menu_btn.on_click = self.return_to_menu
+        # Menu → start game
+        self.ui.menu.on_start_game = self.start_game
 
-        # Game Over buttons
-        self.hud.gameover_restart_btn.on_click = self.restart_game
-        self.hud.gameover_menu_btn.on_click = self.return_to_menu
+        # Pause Menu → actions
+        self.ui.pause.on_resume = self.resume_game
+        self.ui.pause.on_restart = self.restart_game
+        self.ui.pause.on_menu = self.return_to_menu
+
+        # Game Over → actions
+        self.ui.game_over.on_restart = self.restart_game
+        self.ui.game_over.on_menu = self.return_to_menu
 
     def _load_leaderboard(self):
         """Load bảng xếp hạng từ database."""
         try:
             scores = self.db.get_top_scores(10)
-            self.menu.update_leaderboard(scores)
+            self.ui.update_leaderboard(scores)
         except Exception as e:
-            print(f'[GameManager] Error loading leaderboard: {e}')
+            print(f'[GameManager] Leaderboard error: {e}')
 
     # ==============================================================
-    # CÁC HÀNH ĐỘNG CHUYỂN TRẠNG THÁI
+    # HÀNH ĐỘNG ĐẠO DIỄN (ngắn gọn, chỉ gọi)
     # ==============================================================
 
     def start_game(self):
-        """Bắt đầu game mới, reset các giá trị."""
+        """Đạo diễn hô: BẮT ĐẦU!"""
         self.state = GameState.PLAYING
         self.score = 0
-        self.wave = 1
         self.zombies_killed = 0
-        self.zombies_spawned_this_wave = 0
-        self.zombies_to_spawn = self.zombies_per_wave
-        self.spawn_timer = 0
-        self.spawn_interval = 3.0
-        self.is_wave_transitioning = False
         self.play_start_time = _time.time()
 
-        # Xóa zombie cũ (nếu có)
-        self._clear_all_zombies()
-
-        # Tạo lại level
-        self._recreate_level()
-
-        # Reset player
+        # Player tự lo: hồi sinh + reset vũ khí
         self.player.respawn(Vec3(0, 1, 0))
         self.player.enabled = True
+        self.player.reset_weapons()
 
-        # Reset weapon
-        self.weapon.current_ammo = self.weapon.max_ammo
-        self.weapon.total_ammo = WEAPON_TOTAL_AMMO
-        self.weapon.is_reloading = False
-        self.weapon.can_shoot = True
-        self.weapon.enabled = True
+        # Level tự lo: dọn quái + reset wave (KHÔNG load lại map)
+        self.level.reset_level(self.player)
 
-        # Ẩn menu, hiện HUD
-        self.menu.hide()
-        self.hud.show()
-        self.hud.update_health(self.player.health, self.player.max_health)
-        self.hud.update_ammo(self.weapon.current_ammo, self.weapon.total_ammo)
-        self.hud.update_score(self.score)
-        self.hud.update_wave(self.wave)
+        # UI tự lo: chuyển sang chế độ chơi
+        self.ui.switch_to_play_mode()
+        self.ui.update_score(0)
+        self.ui.update_wave(1)
 
-        # Lock chuột để chơi
-        mouse.locked = True
         application.paused = False
-
         print('[GameManager] Game started!')
 
     def pause_game(self):
-        """Tạm dừng game."""
-        if self.state == GameState.PLAYING:
-            self.state = GameState.PAUSED
-            mouse.locked = False
-            application.paused = True
-            self.hud.show_pause_menu()
-            print('[GameManager] Game paused.')
+        """Đạo diễn hô: TẠM DỪNG!"""
+        if self.state != GameState.PLAYING:
+            return
+        self.state = GameState.PAUSED
+        application.paused = True
+        self.ui.switch_to_pause_mode()
 
     def resume_game(self):
-        """Tiếp tục game sau khi tạm dừng."""
-        if self.state == GameState.PAUSED:
-            self.state = GameState.PLAYING
-            mouse.locked = True
-            application.paused = False
-            self.hud.hide_pause_menu()
-            print('[GameManager] Game resumed.')
+        """Đạo diễn hô: TIẾP TỤC!"""
+        if self.state != GameState.PAUSED:
+            return
+        self.state = GameState.PLAYING
+        application.paused = False
+        self.ui.hide_pause()
 
     def game_over(self):
-        """Kết thúc game khi người chơi thua."""
+        """Đạo diễn hô: KẾT THÚC!"""
         self.state = GameState.GAME_OVER
         self.play_time = _time.time() - self.play_start_time
-        mouse.locked = False
         application.paused = False
 
-        # Xóa tất cả zombie
-        self._clear_all_zombies()
+        # Dừng level
+        self.level.stop_waves()
 
-        # Disable player & weapon
+        # Disable player
         self.player.enabled = False
-        self.weapon.enabled = False
+        self.player.disable_weapons()
 
         # Lưu điểm vào database
-        try:
-            self.db.save_score(
-                self.player_name,
-                self.score,
-                self.wave,
-                self.zombies_killed,
-                self.play_time
-            )
-        except Exception as e:
-            print(f'[GameManager] Error saving score: {e}')
+        self._save_score()
 
-        # Hiển thị màn hình Game Over
-        self.hud.show_game_over(self.score, self.wave, self.zombies_killed, self.play_time)
-        print(f'[GameManager] Game Over! Score: {self.score} | Kills: {self.zombies_killed}')
+        # Hiện Game Over
+        self.ui.switch_to_game_over_mode(
+            self.score, self.level.wave,
+            self.zombies_killed, self.play_time
+        )
 
     def return_to_menu(self):
-        """Quay lại menu chính."""
+        """Đạo diễn hô: VỀ MENU!"""
         self.state = GameState.MAIN_MENU
         application.paused = False
 
-        # Xóa zombie
-        self._clear_all_zombies()
-
-        # Ẩn tất cả overlay
-        self.hud.hide()
-        self.hud.hide_game_over()
-        self.hud.hide_pause_menu()
-
-        # Disable player & weapon
+        self.level.stop_waves()
         self.player.enabled = False
-        self.weapon.enabled = False
+        self.player.disable_weapons()
 
-        # Cleanup level
-        if self.level:
-            self.level.cleanup()
-
-        # Cập nhật leaderboard rồi hiện menu
         self._load_leaderboard()
-        self.menu.show()
-        mouse.locked = False
+        self.ui.switch_to_menu_mode()
 
     def restart_game(self):
-        """Chơi lại từ đầu."""
-        self.hud.hide_game_over()
-        self.hud.hide_pause_menu()
+        """Đạo diễn hô: CHƠI LẠI!"""
+        self.ui.pause.hide()
+        self.ui.game_over.hide()
         application.paused = False
         self.start_game()
 
     # ==============================================================
-    # HỆ THỐNG WAVE & SPAWN
+    # CALLBACKS (nhận tin từ các module)
     # ==============================================================
 
-    def add_score(self, points):
-        """Cộng điểm khi tiêu diệt zombie."""
+    def _on_zombie_killed(self, points):
+        """Level báo: zombie chết."""
         self.score += points
         self.zombies_killed += 1
-        self.hud.update_score(self.score)
+        self.ui.update_score(self.score)
 
-    def next_wave(self):
-        """Chuyển sang wave tiếp theo."""
-        self.wave += 1
-        self.zombies_spawned_this_wave = 0
-        self.zombies_to_spawn = self.zombies_per_wave + (self.wave - 1) * 3
-        self.spawn_timer = 0
-        self.is_wave_transitioning = False
-        self.hud.update_wave(self.wave)
-        self.hud.show_wave_notification(self.wave)
-        print(f'[GameManager] Wave {self.wave} started! Zombies: {self.zombies_to_spawn}')
+    def _on_wave_start(self, wave):
+        """Level báo: wave mới."""
+        self.ui.update_wave(wave)
+        self.ui.show_wave_notification(wave)
+
+    def _on_wave_complete(self, wave):
+        """Level báo: wave xong."""
+        self.ui.show_wave_complete(wave)
+
+    def _on_player_death(self):
+        """Player báo: chết."""
+        invoke(self.game_over, delay=1.0)
+
+    def _on_weapon_changed(self, weapon):
+        """Player báo: đổi vũ khí."""
+        self.ui.update_weapon_name(weapon.weapon_name)
+        weapon.on_ammo_changed = self.ui.update_ammo
+        weapon._notify_ammo()
+
+    def _save_score(self):
+        """Lưu điểm vào database."""
+        try:
+            self.db.save_score(
+                self.player_name, self.score,
+                self.level.wave, self.zombies_killed, self.play_time
+            )
+            print(f'[DB] Saved: {self.score}pts')
+        except Exception as e:
+            print(f'[DB] Error: {e}')
+
+    # ==============================================================
+    # UPDATE & INPUT (Ursina tự gọi)
+    # ==============================================================
 
     def update(self):
-        """Cập nhật game logic mỗi frame (Ursina tự gọi)."""
-        if self.state != GameState.PLAYING:
-            return
-
-        self._update_spawn()
-        self._check_wave_complete()
+        """Mỗi frame: chỉ gọi level."""
+        if self.state == GameState.PLAYING:
+            self.level.update_waves()
 
     def input(self, key):
-        """Xử lý input (Ursina tự gọi)."""
+        """ESC: pause/resume. Vũ khí: Player tự lo."""
         if key == 'escape':
             if self.state == GameState.PLAYING:
                 self.pause_game()
             elif self.state == GameState.PAUSED:
                 self.resume_game()
-
-    # ==============================================================
-    # PRIVATE METHODS
-    # ==============================================================
-
-    def _recreate_level(self):
-        """Dọn dẹp level cũ và tạo level mới."""
-        if self.level:
-            self.level.cleanup()
-        self.level = Level01()
-
-    def _update_spawn(self):
-        """Cập nhật logic spawn zombie."""
-        if self.is_wave_transitioning:
-            self.wave_transition_timer -= time.dt
-            if self.wave_transition_timer <= 0:
-                self.next_wave()
-            return
-
-        if self.zombies_spawned_this_wave >= self.zombies_to_spawn:
-            return
-
-        self.spawn_timer -= time.dt
-        if self.spawn_timer <= 0:
-            self._spawn_zombie()
-            self.spawn_timer = self.spawn_interval
-            self.spawn_interval = max(1.0, 3.0 - (self.wave - 1) * 0.3)
-
-    def _spawn_zombie(self):
-        """Spawn một zombie tại vị trí ngẫu nhiên."""
-        from entities.enemies.zombie_base import ZombieBase
-        from entities.enemies.zombie_fast import ZombieFast
-
-        if not self.level or not self.player:
-            return
-
-        spawn_pos = self.level.get_random_spawn_point()
-        spawn_pos = Vec3(
-            spawn_pos.x + random.uniform(-5, 5),
-            1,
-            spawn_pos.z + random.uniform(-5, 5)
-        )
-
-        # Wave 3 trở đi có zombie nhanh (30% cơ hội)
-        if self.wave >= 3 and random.random() < 0.3:
-            zombie = ZombieFast(position=spawn_pos, player=self.player)
-        else:
-            zombie = ZombieBase(position=spawn_pos, player=self.player)
-
-        zombie.on_death = self._on_zombie_death
-        self.active_zombies.append(zombie)
-        self.zombies_spawned_this_wave += 1
-
-    def _on_zombie_death(self, zombie):
-        """Callback khi zombie chết."""
-        from entities.enemies.zombie_fast import ZombieFast
-        points = 150 if isinstance(zombie, ZombieFast) else 100
-        self.add_score(points)
-
-        if zombie in self.active_zombies:
-            self.active_zombies.remove(zombie)
-
-    def _check_wave_complete(self):
-        """Kiểm tra nếu wave hiện tại đã hoàn thành."""
-        if self.is_wave_transitioning:
-            return
-
-        if (self.zombies_spawned_this_wave >= self.zombies_to_spawn
-                and len(self.active_zombies) == 0
-                and self.zombies_to_spawn > 0):
-            self.is_wave_transitioning = True
-            self.wave_transition_timer = 5.0
-            self.hud.show_wave_complete(self.wave)
-            print(f'[GameManager] Wave {self.wave} complete!')
-
-    def _on_player_death(self):
-        """Callback khi player chết."""
-        invoke(self.game_over, delay=1.0)
-
-    def _clear_all_zombies(self):
-        """Xóa tất cả zombie đang tồn tại."""
-        for zombie in self.active_zombies[:]:
-            if zombie:
-                destroy(zombie)
-        self.active_zombies.clear()
+            if self.state == GameState.PLAYING:
+                self.pause_game()
+            elif self.state == GameState.PAUSED:
+                self.resume_game()

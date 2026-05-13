@@ -1,129 +1,135 @@
-# weapon.py - Xử lý súng (raycast, cooldown, nạp đạn)
+# weapon.py - Class gốc (Base) cho tất cả vũ khí.
+# Vũ khí KHÔNG tự xử lý input. Player sẽ gọi shoot()/reload().
 from ursina import *
-from core.config import (
-    WEAPON_DAMAGE, WEAPON_FIRE_RATE, WEAPON_RELOAD_TIME,
-    WEAPON_MAX_AMMO, WEAPON_TOTAL_AMMO
-)
 
 
-class Weapon(Entity):
+class WeaponBase(Entity):
     """
-    Xử lý vũ khí của người chơi.
-    Bao gồm: bắn (raycast), cooldown, nạp đạn, hiệu ứng.
+    Class gốc cho tất cả vũ khí.
+    Chỉ chứa logic: bắn, reload, recoil, ammo.
+    Player sẽ gọi shoot()/reload() thông qua input của mình.
     """
 
-    def __init__(self, player, **kwargs):
+    def __init__(self, player, weapon_name='Weapon', damage=25,
+                 fire_rate=0.15, reload_time=2.0, max_ammo=30,
+                 total_ammo=120, attack_range=100, is_melee=False,
+                 model_scale=(0.15, 0.15, 0.5),
+                 model_color=None,
+                 model_pos=(0.5, -0.3, 0.5), **kwargs):
+        if model_color is None:
+            model_color = color.dark_gray
+
         super().__init__(
             parent=camera.ui,
             model='cube',
-            scale=(0.15, 0.15, 0.5),
-            position=(0.5, -0.3, 0.5),
-            color=color.dark_gray,
+            scale=model_scale,
+            position=model_pos,
+            color=model_color,
             **kwargs
         )
         self.player = player
-        self.damage = WEAPON_DAMAGE
-        self.fire_rate = WEAPON_FIRE_RATE
-        self.reload_time = WEAPON_RELOAD_TIME
-        self.max_ammo = WEAPON_MAX_AMMO
-        self.current_ammo = self.max_ammo
-        self.total_ammo = WEAPON_TOTAL_AMMO
+        self.weapon_name = weapon_name
+        self.damage = damage
+        self.fire_rate = fire_rate
+        self.reload_time = reload_time
+        self.max_ammo = max_ammo
+        self.current_ammo = max_ammo
+        self.total_ammo = total_ammo
+        self.attack_range = attack_range
+        self.is_melee = is_melee
         self.can_shoot = True
         self.is_reloading = False
 
-        # Callbacks để thông báo cho HUD
+        # Vị trí gốc (reset sau recoil)
+        self._base_pos = Vec3(*model_pos)
+
+        # Callback → HUD
         self.on_ammo_changed = None
 
-    def input(self, key):
-        """Xử lý input bắn và nạp đạn."""
-        if key == 'left mouse down':
-            self.shoot()
-        elif key == 'r':
-            self.reload()
+    # KHÔNG có input() - Player sẽ gọi trực tiếp
 
     def shoot(self):
-        """Bắn một viên đạn bằng raycast."""
-        if not self.can_shoot or self.is_reloading or self.current_ammo <= 0:
-            if self.current_ammo <= 0:
-                print('[Weapon] Out of ammo! Press R to reload.')
+        """Bắn / tấn công. Có thể override ở class con."""
+        if not self.can_shoot or self.is_reloading:
             return
 
-        self.can_shoot = False
-        self.current_ammo -= 1
+        if not self.is_melee:
+            if self.current_ammo <= 0:
+                print(f'[{self.weapon_name}] Out of ammo! Press R to reload.')
+                return
+            self.current_ammo -= 1
 
-        # Raycast từ camera về phía trước
+        self.can_shoot = False
+
+        # Raycast từ camera
         hit_info = raycast(
             origin=camera.world_position,
             direction=camera.forward,
-            distance=100,
+            distance=self.attack_range,
             ignore=[self.player, ]
         )
 
         if hit_info.hit:
-            # Kiểm tra nếu trúng zombie
             if hasattr(hit_info.entity, 'take_damage'):
                 hit_info.entity.take_damage(self.damage)
-                print(f'[Weapon] Hit {hit_info.entity} for {self.damage} damage!')
+                print(f'[{self.weapon_name}] Hit for {self.damage} damage!')
             else:
-                # Hiệu ứng đạn trúng tường/sàn
                 impact = Entity(
-                    model='sphere',
-                    scale=0.05,
-                    position=hit_info.world_point,
-                    color=color.yellow
+                    model='sphere', scale=0.05,
+                    position=hit_info.world_point, color=color.yellow
                 )
                 destroy(impact, delay=0.5)
 
-        # Cập nhật HUD
-        if self.on_ammo_changed:
-            self.on_ammo_changed(self.current_ammo, self.total_ammo)
-
-        # Hiệu ứng giật súng
+        self._notify_ammo()
         self._recoil()
-
-        # Cooldown
         invoke(self._reset_shoot, delay=self.fire_rate)
 
-        # Tự động nạp đạn khi hết
-        if self.current_ammo <= 0 and self.total_ammo > 0:
+        if not self.is_melee and self.current_ammo <= 0 and self.total_ammo > 0:
             invoke(self.reload, delay=0.5)
 
     def _recoil(self):
-        """Hiệu ứng giật súng khi bắn."""
-        original_pos = self.position
+        """Hiệu ứng giật."""
         self.animate_position(
-            self.position + Vec3(0, 0.02, -0.05),
-            duration=0.05
+            self._base_pos + Vec3(0, 0.02, -0.05), duration=0.05
         )
         invoke(
-            lambda: self.animate_position(original_pos, duration=0.1),
+            lambda: self.animate_position(self._base_pos, duration=0.1),
             delay=0.05
         )
 
     def _reset_shoot(self):
-        """Reset trạng thái cho phép bắn tiếp."""
         self.can_shoot = True
 
     def reload(self):
         """Nạp đạn."""
+        if self.is_melee:
+            return
         if self.is_reloading or self.current_ammo == self.max_ammo or self.total_ammo <= 0:
             return
-
         self.is_reloading = True
-        print(f'[Weapon] Reloading... ({self.reload_time}s)')
-
+        print(f'[{self.weapon_name}] Reloading...')
         invoke(self._finish_reload, delay=self.reload_time)
 
     def _finish_reload(self):
-        """Hoàn tất nạp đạn."""
         ammo_needed = self.max_ammo - self.current_ammo
         ammo_to_load = min(ammo_needed, self.total_ammo)
-
         self.current_ammo += ammo_to_load
         self.total_ammo -= ammo_to_load
         self.is_reloading = False
+        print(f'[{self.weapon_name}] Reloaded! {self.current_ammo}/{self.total_ammo}')
+        self._notify_ammo()
 
-        print(f'[Weapon] Reloaded! Ammo: {self.current_ammo}/{self.total_ammo}')
-
+    def _notify_ammo(self):
         if self.on_ammo_changed:
-            self.on_ammo_changed(self.current_ammo, self.total_ammo)
+            if self.is_melee:
+                self.on_ammo_changed(-1, -1)
+            else:
+                self.on_ammo_changed(self.current_ammo, self.total_ammo)
+
+    def reset_ammo(self):
+        self.current_ammo = self.max_ammo
+        self.is_reloading = False
+        self.can_shoot = True
+
+
+Weapon = WeaponBase

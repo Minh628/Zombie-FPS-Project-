@@ -7,7 +7,7 @@ from core.utils import distance_between, direction_to
 class ZombieBase(Entity):
     """
     Class gốc cho tất cả zombie.
-    Xử lý: di chuyển về phía player, tấn công, nhận damage, chết.
+    Xử lý: di chuyển về phía player (có collision), tấn công, nhận damage, chết.
     """
 
     def __init__(self, position=Vec3(0, 0, 0), player=None, **kwargs):
@@ -33,16 +33,46 @@ class ZombieBase(Entity):
         self.on_death = None
 
     def update(self):
-        """Di chuyển về phía player mỗi frame."""
+        """Di chuyển về phía player mỗi frame (có collision check)."""
         if not self.is_alive or not self.player:
             return
 
         # Tính hướng đến player
         direction = direction_to(self, self.player)
-        direction.y = 0  # Không di chuyển theo trục Y
+        direction.y = 0
 
-        # Di chuyển
-        self.position += direction * self.speed * time.dt
+        if direction.length() > 0:
+            direction = direction.normalized()
+
+        move_amount = direction * self.speed * time.dt
+
+        # === COLLISION CHECK: kiểm tra trước khi di chuyển ===
+        # Raycast phía trước để tránh xuyên tường
+        hit = raycast(
+            origin=self.position + Vec3(0, 0.5, 0),
+            direction=direction,
+            distance=self.speed * time.dt + 0.8,
+            ignore=[self, self.player],
+        )
+
+        if not hit.hit or (hasattr(hit.entity, 'is_alive')):
+            # Không có vật cản hoặc đó là zombie khác → di chuyển
+            self.position += move_amount
+        else:
+            # Có tường/vật cản → thử trượt sang bên
+            # Thử di chuyển theo trục X
+            side_dir = Vec3(direction.z, 0, -direction.x).normalized()
+            side_hit = raycast(
+                origin=self.position + Vec3(0, 0.5, 0),
+                direction=side_dir,
+                distance=self.speed * time.dt + 0.8,
+                ignore=[self, self.player],
+            )
+            if not side_hit.hit:
+                self.position += side_dir * self.speed * time.dt * 0.5
+
+        # Giữ zombie trên mặt đất
+        self.y = 1
 
         # Quay mặt về phía player
         self.look_at_2d(self.player.position, axis='y')

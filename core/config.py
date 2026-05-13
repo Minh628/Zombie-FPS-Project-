@@ -14,12 +14,37 @@ PLAYER_SPRINT_SPEED = 8
 PLAYER_JUMP_HEIGHT = 2
 MOUSE_SENSITIVITY = 40
 
-# --- Cài đặt vũ khí ---
-WEAPON_DAMAGE = 25
-WEAPON_FIRE_RATE = 0.15         # Giây giữa mỗi lần bắn
-WEAPON_RELOAD_TIME = 2.0        # Giây để nạp đạn
-WEAPON_MAX_AMMO = 30            # Đạn tối đa trong băng
-WEAPON_TOTAL_AMMO = 120         # Tổng đạn dự trữ
+# --- Cài đặt vũ khí: Rifle (Phím 1) ---
+RIFLE_NAME = 'RIFLE'
+RIFLE_DAMAGE = 25
+RIFLE_FIRE_RATE = 0.15          # Giây giữa mỗi lần bắn
+RIFLE_RELOAD_TIME = 2.0         # Giây để nạp đạn
+RIFLE_MAX_AMMO = 30             # Đạn tối đa trong băng
+RIFLE_TOTAL_AMMO = 120          # Tổng đạn dự trữ
+RIFLE_RANGE = 100               # Tầm bắn
+
+# --- Cài đặt vũ khí: Pistol (Phím 2) ---
+PISTOL_NAME = 'PISTOL'
+PISTOL_DAMAGE = 15
+PISTOL_FIRE_RATE = 0.35
+PISTOL_RELOAD_TIME = 1.5
+PISTOL_MAX_AMMO = 12
+PISTOL_TOTAL_AMMO = 60
+PISTOL_RANGE = 50
+
+# --- Cài đặt vũ khí: Knife (Phím 3) ---
+KNIFE_NAME = 'KNIFE'
+KNIFE_DAMAGE = 50
+KNIFE_ATTACK_RATE = 0.5
+KNIFE_RANGE = 3.0
+
+# --- (Dự phòng tương lai) ---
+# WEAPON_DAMAGE, WEAPON_FIRE_RATE... giữ lại cho backward compat
+WEAPON_DAMAGE = RIFLE_DAMAGE
+WEAPON_FIRE_RATE = RIFLE_FIRE_RATE
+WEAPON_RELOAD_TIME = RIFLE_RELOAD_TIME
+WEAPON_MAX_AMMO = RIFLE_MAX_AMMO
+WEAPON_TOTAL_AMMO = RIFLE_TOTAL_AMMO
 
 # --- Cài đặt Zombie ---
 ZOMBIE_BASE_HEALTH = 50

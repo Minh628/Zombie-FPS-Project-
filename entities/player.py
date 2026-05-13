@@ -1,16 +1,22 @@
-# player.py - Kế thừa FirstPersonController, xử lý máu, di chuyển
+# player.py - Kế thừa FirstPersonController, xử lý máu, di chuyển, vũ khí (inventory)
+# Player tự chứa danh sách vũ khí, tự bắn/reload/switch khi nhấn phím.
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from core.config import (
     PLAYER_MAX_HEALTH, PLAYER_MOVE_SPEED, PLAYER_SPRINT_SPEED,
-    PLAYER_JUMP_HEIGHT, MOUSE_SENSITIVITY
+    PLAYER_JUMP_HEIGHT, MOUSE_SENSITIVITY,
+    RIFLE_TOTAL_AMMO, PISTOL_TOTAL_AMMO
 )
+from entities.weapons.rifle import Rifle
+from entities.weapons.pistol import Pistol
+from entities.weapons.knife import Knife
 
 
 class Player(FirstPersonController):
     """
     Nhân vật người chơi - kế thừa FirstPersonController của Ursina.
     Xử lý: di chuyển, nhảy, chạy nhanh, nhận sát thương, chết.
+    Chứa inventory vũ khí: tự bắn, reload, switch khi nhấn phím.
     """
 
     def __init__(self, **kwargs):
@@ -24,15 +30,69 @@ class Player(FirstPersonController):
         self.is_alive = True
         self.is_sprinting = False
 
-        # Callbacks để thông báo cho HUD
-        self.on_health_changed = None
-        self.on_death = None
+        # === VŨ KHÍ (Player tự chứa) ===
+        self.weapons = [Rifle(self), Pistol(self), Knife(self)]
+        self.current_weapon_index = 0
+        for w in self.weapons:
+            w.enabled = False
+
+        # Callbacks
+        self.on_health_changed = None   # → UIManager (máu)
+        self.on_death = None            # → GameManager
+        self.on_weapon_changed = None   # → UIManager (tên vũ khí + đạn)
+
+    @property
+    def current_weapon(self):
+        """Vũ khí đang cầm."""
+        return self.weapons[self.current_weapon_index]
+
+    # ==============================================================
+    # VŨ KHÍ
+    # ==============================================================
+
+    def switch_weapon(self, index):
+        """Chuyển vũ khí."""
+        if index == self.current_weapon_index or index >= len(self.weapons):
+            return
+        self.current_weapon.enabled = False
+        self.current_weapon.on_ammo_changed = None
+        self.current_weapon_index = index
+        self.current_weapon.enabled = True
+        if self.on_weapon_changed:
+            self.on_weapon_changed(self.current_weapon)
+        print(f'[Player] Switched to {self.current_weapon.weapon_name}')
+
+    def equip_default_weapon(self):
+        """Trang bị Rifle (vũ khí mặc định)."""
+        self.current_weapon_index = 0
+        for i, w in enumerate(self.weapons):
+            w.enabled = (i == 0)
+            w.on_ammo_changed = None
+        if self.on_weapon_changed:
+            self.on_weapon_changed(self.current_weapon)
+
+    def reset_weapons(self):
+        """Reset tất cả vũ khí về đạn đầy."""
+        for w in self.weapons:
+            w.reset_ammo()
+        self.weapons[0].total_ammo = RIFLE_TOTAL_AMMO
+        self.weapons[1].total_ammo = PISTOL_TOTAL_AMMO
+        self.equip_default_weapon()
+
+    def disable_weapons(self):
+        """Ẩn tất cả vũ khí."""
+        for w in self.weapons:
+            w.enabled = False
+            w.on_ammo_changed = None
+
+    # ==============================================================
+    # UPDATE
+    # ==============================================================
 
     def update(self):
         """Cập nhật mỗi frame."""
         if not self.is_alive:
             return
-
         super().update()
 
         # Sprint khi giữ Shift
@@ -43,20 +103,47 @@ class Player(FirstPersonController):
             self.speed = PLAYER_MOVE_SPEED
             self.is_sprinting = False
 
-    def take_damage(self, damage):
-        """Nhận sát thương từ zombie."""
+    # ==============================================================
+    # INPUT - Player tự bắn, reload, switch
+    # ==============================================================
+
+    def input(self, key):
+        """Xử lý tất cả input của player."""
         if not self.is_alive:
             return
 
+        # Gọi FirstPersonController.input() để xử lý nhảy (SPACE) và các phím mặc định
+        super().input(key)
+
+        # Bắn
+        if key == 'left mouse down':
+            self.current_weapon.shoot()
+
+        # Nạp đạn
+        elif key == 'r':
+            self.current_weapon.reload()
+
+        # Chuyển vũ khí
+        elif key == '1':
+            self.switch_weapon(0)
+        elif key == '2':
+            self.switch_weapon(1)
+        elif key == '3':
+            self.switch_weapon(2)
+
+    # ==============================================================
+    # MÁU & CHẾT
+    # ==============================================================
+
+    def take_damage(self, damage):
+        """Nhận sát thương."""
+        if not self.is_alive:
+            return
         self.health -= damage
         self.health = max(0, self.health)
-
         print(f'[Player] Took {damage} damage! Health: {self.health}/{self.max_health}')
-
-        # Gọi callback cập nhật HUD
         if self.on_health_changed:
             self.on_health_changed(self.health, self.max_health)
-
         if self.health <= 0:
             self.die()
 
@@ -67,14 +154,14 @@ class Player(FirstPersonController):
             self.on_health_changed(self.health, self.max_health)
 
     def die(self):
-        """Xử lý khi người chơi chết."""
+        """Xử lý khi chết."""
         self.is_alive = False
         print('[Player] Player died!')
         if self.on_death:
             self.on_death()
 
     def respawn(self, position=Vec3(0, 1, 0)):
-        """Hồi sinh người chơi."""
+        """Hồi sinh."""
         self.health = self.max_health
         self.is_alive = True
         self.position = position
