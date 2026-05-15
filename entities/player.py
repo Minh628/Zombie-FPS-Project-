@@ -5,11 +5,14 @@ from ursina.prefabs.first_person_controller import FirstPersonController
 from core.config import (
     PLAYER_MAX_HEALTH, PLAYER_MOVE_SPEED, PLAYER_SPRINT_SPEED,
     PLAYER_JUMP_HEIGHT, MOUSE_SENSITIVITY,
-    RIFLE_TOTAL_AMMO, PISTOL_TOTAL_AMMO
+    
+    RIFLE_TOTAL_AMMO, PISTOL_TOTAL_AMMO, AK47_TOTAL_AMMO
 )
 from entities.weapons.rifle import Rifle
 from entities.weapons.pistol import Pistol
 from entities.weapons.knife import Knife
+
+from entities.weapons.ak47 import AK47
 
 
 class Player(FirstPersonController):
@@ -31,7 +34,7 @@ class Player(FirstPersonController):
         self.is_sprinting = False
 
         # === VŨ KHÍ (Player tự chứa) ===
-        self.weapons = [Rifle(self), Pistol(self), Knife(self)]
+        self.weapons = [Rifle(self), Pistol(self), Knife(self), AK47(self)]
         self.current_weapon_index = 0
         for w in self.weapons:
             w.enabled = False
@@ -77,6 +80,7 @@ class Player(FirstPersonController):
             w.reset_ammo()
         self.weapons[0].total_ammo = RIFLE_TOTAL_AMMO
         self.weapons[1].total_ammo = PISTOL_TOTAL_AMMO
+        self.weapons[3].total_ammo = AK47_TOTAL_AMMO
         self.equip_default_weapon()
 
     def disable_weapons(self):
@@ -130,6 +134,8 @@ class Player(FirstPersonController):
             self.switch_weapon(1)
         elif key == '3':
             self.switch_weapon(2)
+        elif key == '4':
+            self.switch_weapon(3)
 
     # ==============================================================
     # MÁU & CHẾT
