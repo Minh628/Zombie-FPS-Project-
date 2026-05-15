@@ -1,0 +1,11 @@
+Model Information:
+* title:	Sci-fi pistol
+* source:	https://sketchfab.com/3d-models/sci-fi-pistol-c23394d709d14772adf355da84408edc
+* author:	Eugen Vahrushin (https://sketchfab.com/eugen_vahrushin)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Sci-fi pistol" (https://sketchfab.com/3d-models/sci-fi-pistol-c23394d709d14772adf355da84408edc) by Eugen Vahrushin (https://sketchfab.com/eugen_vahrushin) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
