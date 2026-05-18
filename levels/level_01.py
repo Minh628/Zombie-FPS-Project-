@@ -75,15 +75,17 @@ class Level01:
         # ground = Entity(
         #     model='map.gltf', collider='box', position=Vec3(300, -1, 0)
         # )
-        house = Entity(
+        map = Entity(
             # model='nuketown/nuketown.obj', collider='mesh', position=Vec3(100, -10, -500), scale=0.9
             # model='fpsmap/map.obj', collider='mesh', 
             # position=Vec3(-200, -10, -200), scale=1
             model='paintballmap/map.obj', collider='mesh', 
             position=Vec3(-50, 0, -250), scale=0.6
+            # model='paintballmap/map.gltf', collider='box', 
+            # position=Vec3(150, 0, 250), scale=0.6
         )
         # self.entities.append(ground)
-        self.entities.append(house)
+        self.entities.append(map)
 
         self.sky = Sky()
         self.entities.append(self.sky)
@@ -97,10 +99,10 @@ class Level01:
     def _setup_spawn_points(self):
         """Định nghĩa các điểm spawn zombie."""
         self.spawn_points = [
-            Vec3(30, 0, 30), Vec3(-30, 0, 30),
-            Vec3(30, 0, -30), Vec3(-30, 0, -30),
-            Vec3(40, 0, 0), Vec3(-40, 0, 0),
-            Vec3(0, 0, 40), Vec3(0, 0, -40),
+            Vec3(0, 0, 30), Vec3(0, 0, -30),
+            Vec3(30, 0, -30), Vec3(0, 0, 30),
+            Vec3(0, 0, 30), Vec3(0, 0, -30),
+            Vec3(0, 0, -30), Vec3(0, 0, 30),
         ]
 
     # ==============================================================
