@@ -43,49 +43,18 @@ class Level01:
 
     def _setup_environment(self):
         """Tạo môi trường map Level 1."""
-        # ground = Entity(
-        #     model='plane', scale=(100, 1, 100),
-        #     color=color.gray, texture='white_cube',
-        #     texture_scale=(50, 50), collider='box'
-        # )
-        # self.entities.append(ground)
-
-        # walls_data = [
-        #     (Vec3(0, 2, 50), Vec3(100, 4, 1)),
-        #     (Vec3(0, 2, -50), Vec3(100, 4, 1)),
-        #     (Vec3(50, 2, 0), Vec3(1, 4, 100)),
-        #     (Vec3(-50, 2, 0), Vec3(1, 4, 100)),
-        # ]
-        # for pos, scale in walls_data:
-        #     wall = Entity(
-        #         model='cube', position=pos, scale=scale,
-        #         color=color.dark_gray, collider='box'
-        #     )
-        #     self.entities.append(wall)
-
-        # for i in range(15):
-        #     obstacle = Entity(
-        #         model='cube',
-        #         position=(random.uniform(-40, 40), 1, random.uniform(-40, 40)),
-        #         scale=(random.uniform(1, 3), 2, random.uniform(1, 3)),
-        #         color=color.brown, collider='box'
-        #     )
-        #     self.entities.append(obstacle)
-
-        # ground = Entity(
-        #     model='map.gltf', collider='box', position=Vec3(300, -1, 0)
-        # )
         map = Entity(
-            # model='nuketown/nuketown.obj', collider='mesh', position=Vec3(100, -10, -500), scale=0.9
-            # model='fpsmap/map.obj', collider='mesh', 
-            # position=Vec3(-200, -10, -200), scale=1
-            model='paintballmap/map.obj', collider='mesh', 
-            position=Vec3(-50, 0, -250), scale=0.6
-            # model='paintballmap/map.gltf', collider='box', 
-            # position=Vec3(150, 0, 250), scale=0.6
+            model='paintballmap/map.gltf', collider='box', 
+            position=Vec3(150, 0, 250), scale=0.6,
         )
-        # self.entities.append(ground)
         self.entities.append(map)
+
+        mapReal = Entity(
+            model='paintballmap/map.obj', collider='mesh', 
+            position=Vec3(-50, 0, -250), scale=0.6,
+            # visible=True,
+        )
+        self.entities.append(mapReal)
 
         self.sky = Sky()
         self.entities.append(self.sky)

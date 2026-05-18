@@ -1,24 +1,8 @@
-newmtl Flag1Mtl
+newmtl Height15Mtl
 Material Color
-Ka 0.940601 0.940601 0.940601
-Kd 0.940601 0.940601 0.940601
-Ks 0.0590181 0.0590181 0.0590181 
-
-d 1
-
-Ns 0
-
-map_Ka Flag1_diff.png
-map_Kd Flag1_diff.png
-map_d Flag1_diff.png
-
-map_Bump Flag1_nmap.png
-
-newmtl Height1Mtl
-Material Color
-Ka 0.358654 0.113921 0.0315514
-Kd 0.358654 0.113921 0.0315514
-Ks 0.0225038 0.00714798 0.0019797 
+Ka 0.00715504 0.018913 0.0315514
+Kd 0.00715504 0.018913 0.0315514
+Ks 0.000448943 0.0011867 0.0019797 
 
 d 1
 
@@ -62,19 +46,37 @@ map_d Flag1_diff.png
 
 map_Bump Flag1_nmap.png
 
-newmtl Height12Mtl
+newmtl Flag1Mtl
 Material Color
-Ka 1 1 1
-Kd 1 1 1
-Ks 0.0627451 0.0627451 0.0627451 
+Ka 0.940601 0.940601 0.940601
+Kd 0.940601 0.940601 0.940601
+Ks 0.0590181 0.0590181 0.0590181 
 
 d 1
 
 Ns 0
 
-map_Ka Height12_diff.png
-map_Kd Height12_diff.png
-map_d Height12_diff.png
+map_Ka Flag1_diff.png
+map_Kd Flag1_diff.png
+map_d Flag1_diff.png
+
+map_Bump Flag1_nmap.png
+
+newmtl Height1Mtl
+Material Color
+Ka 0.358654 0.113921 0.0315514
+Kd 0.358654 0.113921 0.0315514
+Ks 0.0225038 0.00714798 0.0019797 
+
+d 1
+
+Ns 0
+
+map_Ka Flag1_diff.png
+map_Kd Flag1_diff.png
+map_d Flag1_diff.png
+
+map_Bump Flag1_nmap.png
 
 newmtl Height11Mtl
 Material Color
@@ -106,21 +108,19 @@ map_Ka Height5_diff.png
 map_Kd Height5_diff.png
 map_d Height5_diff.png
 
-newmtl Height15Mtl
+newmtl Height12Mtl
 Material Color
-Ka 0.00715504 0.018913 0.0315514
-Kd 0.00715504 0.018913 0.0315514
-Ks 0.000448943 0.0011867 0.0019797 
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.0627451 0.0627451 0.0627451 
 
 d 1
 
 Ns 0
 
-map_Ka Flag1_diff.png
-map_Kd Flag1_diff.png
-map_d Flag1_diff.png
-
-map_Bump Flag1_nmap.png
+map_Ka Height12_diff.png
+map_Kd Height12_diff.png
+map_d Height12_diff.png
 
 newmtl Height16Mtl
 Material Color
@@ -170,27 +170,29 @@ map_Bump Flag1_nmap.png
 
 newmtl Floor1Mtl
 Material Color
-Ka 0.0780566 0.154152 0.0869013
-Kd 0.0780566 0.154152 0.0869013
-Ks 0.00489767 0.0096723 0.00545263 
+Ka 0.940601 0.701169 0.154152
+Kd 0.940601 0.701169 0.154152
+Ks 0.029509 0.0219975 0.00483615 
 
 d 1
 
 Ns 0
 
-map_Ka Flag1_diff.png
-map_Kd Flag1_diff.png
-map_d Flag1_diff.png
+map_Ka Floor1_diff.png
+map_Kd Floor1_diff.png
+map_d Floor1_diff.png
 
-map_Bump Flag1_nmap.png
+map_Bump Floor1_nmap.png
+
+map_Ns Floor1_spec.png
 
 newmtl Floor2Mtl
 Material Color
-Ka 1 1 1
-Kd 1 1 1
-Ks 0.0627451 0.0627451 0.0627451 
+Ka 0 0 0
+Kd 0 0 0
+Ks 0 0 0 
 
-d 1
+d 0.2
 
 Ns 0
 
