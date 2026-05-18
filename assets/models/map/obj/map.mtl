@@ -1,0 +1,130 @@
+newmtl Height1Mtl
+Material Color
+Ka 0.358654 0.113921 0.0315514
+Kd 0.358654 0.113921 0.0315514
+Ks 0.0225038 0.00714798 0.0019797 
+
+d 1
+
+Ns 0
+
+map_Ka Height1_diff.png
+map_Kd Height1_diff.png
+map_d Height1_diff.png
+
+map_Bump Height1_nmap.png
+
+newmtl Height13Mtl
+Material Color
+Ka 0.00715504 0.018913 0.0315514
+Kd 0.00715504 0.018913 0.0315514
+Ks 0.000448943 0.0011867 0.0019797 
+
+d 1
+
+Ns 0
+
+map_Ka Height1_diff.png
+map_Kd Height1_diff.png
+map_d Height1_diff.png
+
+map_Bump Height1_nmap.png
+
+newmtl Height2Mtl
+Material Color
+Ka 0.373615 0.368591 0.383775
+Kd 0.373615 0.368591 0.383775
+Ks 0.0234425 0.0231273 0.02408 
+
+d 1
+
+Ns 0
+
+map_Ka Height1_diff.png
+map_Kd Height1_diff.png
+map_d Height1_diff.png
+
+map_Bump Height1_nmap.png
+
+newmtl Height10Mtl
+Material Color
+Ka 0.560499 0.0169881 0.00775103
+Kd 0.560499 0.0169881 0.00775103
+Ks 0.0351686 0.00106592 0.000486339 
+
+d 1
+
+Ns 0
+
+map_Ka Height1_diff.png
+map_Kd Height1_diff.png
+map_d Height1_diff.png
+
+map_Bump Height1_nmap.png
+
+newmtl Height96Mtl
+Material Color
+Ka 0.618686 0.618686 0.618686
+Kd 0.618686 0.618686 0.618686
+Ks 0.0388195 0.0388195 0.0388195 
+
+d 1
+
+Ns 0
+
+map_Ka Height1_diff.png
+map_Kd Height1_diff.png
+map_d Height1_diff.png
+
+map_Bump Height1_nmap.png
+
+newmtl Truss1Mtl
+Material Color
+Ka 0.124741 0.113921 0.121986
+Kd 0.124741 0.113921 0.121986
+Ks 0.00782688 0.00714798 0.00765401 
+
+d 1
+
+Ns 0
+
+map_Ka Height1_diff.png
+map_Kd Height1_diff.png
+map_d Height1_diff.png
+
+map_Bump Height1_nmap.png
+
+newmtl Floor1Mtl
+Material Color
+Ka 0.940601 0.701169 0.154152
+Kd 0.940601 0.701169 0.154152
+Ks 0.029509 0.0219975 0.00483615 
+
+d 1
+
+Ns 0
+
+map_Ka Floor1_diff.png
+map_Kd Floor1_diff.png
+map_d Floor1_diff.png
+
+map_Bump Floor1_nmap.png
+
+map_Ns Floor1_spec.png
+
+newmtl Reloadstation1Mtl
+Material Color
+Ka 0.940601 0.940601 0.940601
+Kd 0.940601 0.940601 0.940601
+Ks 0.0590181 0.0590181 0.0590181 
+
+d 1
+
+Ns 0
+
+map_Ka Height1_diff.png
+map_Kd Height1_diff.png
+map_d Height1_diff.png
+
+map_Bump Height1_nmap.png
+

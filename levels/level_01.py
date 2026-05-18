@@ -41,20 +41,29 @@ class Level01:
     # MAP SETUP (chỉ gọi 1 lần trong __init__)
     # ==============================================================
 
+
     def _setup_environment(self):
         """Tạo môi trường map Level 1."""
-        map = Entity(
-            model='paintballmap/map.gltf', collider='box', 
-            position=Vec3(150, 0, 250), scale=0.6,
-        )
-        self.entities.append(map)
 
-        mapReal = Entity(
-            model='paintballmap/map.obj', collider='mesh', 
-            position=Vec3(-50, 0, -250), scale=0.6,
-            # visible=True,
+        # ===============================================================
+        # ===============================================================
+
+        mapOBJ = Entity(
+            model='assets/models/map/obj/map.obj', collider='mesh',
+            position=Vec3(0, 0, 0), scale=0.6,
         )
-        self.entities.append(mapReal)
+        mapOBJ.visible = False      # Set AFTER creation so it applies once the model is loaded
+        mapOBJ.color = color.rgba(0, 0, 0, 0)  # Fully transparent fallback (keeps collider active)
+
+        mapGLTF = Entity(
+            model='assets/models/map/gltf/map.gltf',
+            rotation = Vec3(0, 180, 0),
+            scale=0.6,
+        )
+        mapGLTF.position=Vec3(0, 0, 0)
+
+        # ===============================================================
+        # ===============================================================
 
         self.sky = Sky()
         self.entities.append(self.sky)
