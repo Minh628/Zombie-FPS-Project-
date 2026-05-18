@@ -5,9 +5,10 @@ from ursina.prefabs.first_person_controller import FirstPersonController
 from core.config import (
     PLAYER_MAX_HEALTH, PLAYER_MOVE_SPEED, PLAYER_SPRINT_SPEED,
     PLAYER_JUMP_HEIGHT, MOUSE_SENSITIVITY,
-    RIFLE_TOTAL_AMMO, PISTOL_TOTAL_AMMO
+    
+    PISTOL_TOTAL_AMMO, AK47_TOTAL_AMMO
 )
-from entities.weapons.rifle import Rifle
+from entities.weapons.ak47 import AK47
 from entities.weapons.pistol import Pistol
 from entities.weapons.knife import Knife
 
@@ -31,7 +32,8 @@ class Player(FirstPersonController):
         self.is_sprinting = False
 
         # === VŨ KHÍ (Player tự chứa) ===
-        self.weapons = [Rifle(self), Pistol(self), Knife(self)]
+        # 1: AK47, 2: Pistol, 3: Knife
+        self.weapons = [AK47(self), Pistol(self), Knife(self)]
         self.current_weapon_index = 0
         for w in self.weapons:
             w.enabled = False
@@ -63,7 +65,7 @@ class Player(FirstPersonController):
         print(f'[Player] Switched to {self.current_weapon.weapon_name}')
 
     def equip_default_weapon(self):
-        """Trang bị Rifle (vũ khí mặc định)."""
+        """Trang bị AK47 (vũ khí mặc định)."""
         self.current_weapon_index = 0
         for i, w in enumerate(self.weapons):
             w.enabled = (i == 0)
@@ -75,7 +77,7 @@ class Player(FirstPersonController):
         """Reset tất cả vũ khí về đạn đầy."""
         for w in self.weapons:
             w.reset_ammo()
-        self.weapons[0].total_ammo = RIFLE_TOTAL_AMMO
+        self.weapons[0].total_ammo = AK47_TOTAL_AMMO
         self.weapons[1].total_ammo = PISTOL_TOTAL_AMMO
         self.equip_default_weapon()
 
@@ -125,11 +127,11 @@ class Player(FirstPersonController):
 
         # Chuyển vũ khí
         elif key == '1':
-            self.switch_weapon(0)
+            self.switch_weapon(0) # AK47
         elif key == '2':
-            self.switch_weapon(1)
+            self.switch_weapon(1) # Pistol
         elif key == '3':
-            self.switch_weapon(2)
+            self.switch_weapon(2) # Knife
 
     # ==============================================================
     # MÁU & CHẾT
