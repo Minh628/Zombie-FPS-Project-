@@ -28,6 +28,10 @@ class ZombieBase(Entity):
         self.attack_cooldown = 1.5
         self.can_attack = True
         self.is_alive = True
+        self.vertical_velocity = 0.0
+        self.gravity = 25.0
+        self.ground_snap_distance = 0.6
+        self.ground_check_distance = 6.0
 
         # Callbacks
         self.on_death = None
@@ -48,8 +52,9 @@ class ZombieBase(Entity):
 
         # === COLLISION CHECK: kiểm tra trước khi di chuyển ===
         # Raycast phía trước để tránh xuyên tường
+        forward_origin = self.position + Vec3(0, max(0.2, self._half_height()), 0)
         hit = raycast(
-            origin=self.position + Vec3(0, 0.5, 0),
+            origin=forward_origin,
             direction=direction,
             distance=self.speed * time.dt + 0.8,
             ignore=[self, self.player],
@@ -63,7 +68,7 @@ class ZombieBase(Entity):
             # Thử di chuyển theo trục X
             side_dir = Vec3(direction.z, 0, -direction.x).normalized()
             side_hit = raycast(
-                origin=self.position + Vec3(0, 0.5, 0),
+                origin=forward_origin,
                 direction=side_dir,
                 distance=self.speed * time.dt + 0.8,
                 ignore=[self, self.player],
@@ -71,8 +76,7 @@ class ZombieBase(Entity):
             if not side_hit.hit:
                 self.position += side_dir * self.speed * time.dt * 0.5
 
-        # Giữ zombie trên mặt đất
-        self.y = 1
+        self._apply_gravity_and_ground()
 
         # Quay mặt về phía player
         self.look_at_2d(self.player.position, axis='y')
@@ -81,6 +85,44 @@ class ZombieBase(Entity):
         dist = distance_between(self, self.player)
         if dist <= self.attack_range and self.can_attack:
             self.attack()
+
+    def _half_height(self):
+        if hasattr(self, 'scale_y'):
+            return self.scale_y * 0.5
+        if isinstance(self.scale, Vec3):
+            return self.scale.y * 0.5
+        if isinstance(self.scale, (tuple, list)) and len(self.scale) >= 2:
+            return self.scale[1] * 0.5
+        return 1.0
+
+    def _hit_world_y(self, hit):
+        if hasattr(hit, 'world_point') and hit.world_point is not None:
+            return hit.world_point.y
+        if hasattr(hit, 'point') and hit.point is not None:
+            return hit.point.y
+        return None
+
+    def _apply_gravity_and_ground(self):
+        half_height = self._half_height()
+        ray_origin = self.position + Vec3(0, half_height + 0.05, 0)
+        hit_down = raycast(
+            origin=ray_origin,
+            direction=Vec3(0, -1, 0),
+            distance=half_height + self.ground_check_distance,
+            ignore=[self, self.player],
+        )
+
+        if hit_down.hit and not getattr(hit_down.entity, 'is_alive', False):
+            ground_y = self._hit_world_y(hit_down)
+            if ground_y is not None:
+                target_y = ground_y + half_height
+                if self.y <= target_y + self.ground_snap_distance and self.vertical_velocity <= 0:
+                    self.y = target_y
+                    self.vertical_velocity = 0.0
+                    return
+
+        self.vertical_velocity -= self.gravity * time.dt
+        self.y += self.vertical_velocity * time.dt
 
     def attack(self):
         """Tấn công player khi đủ gần."""
