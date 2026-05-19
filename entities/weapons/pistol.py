@@ -4,7 +4,7 @@ from entities.weapon import WeaponBase
 from core.config import (
     PISTOL_NAME, PISTOL_DAMAGE, PISTOL_FIRE_RATE,
     PISTOL_RELOAD_TIME, PISTOL_MAX_AMMO, PISTOL_TOTAL_AMMO, PISTOL_RANGE,
-    MODELS_DIR
+    MODELS_DIR, SOUNDS_DIR
 )
 
 
@@ -37,7 +37,8 @@ class Pistol(WeaponBase):
             parent=self,
             rotation=(0, 80, 10) 
         )
-        
+        self.shoot_sound = Audio(f'{SOUNDS_DIR}/pistol_shoot.mp3', autoplay=False, loop=False)
+        self.shoot_sound.volume = 0.9
         raw_center = Vec3(-3.75, -1.89, 2.91)
         scale_factor = 0.04  # Căn chỉnh để súng không quá to
         
@@ -51,7 +52,18 @@ class Pistol(WeaponBase):
 
         # Cập nhật vị trí gốc (dùng cho hiệu ứng giật súng)
         self._base_pos = Vec3(0.4, -0.4, 1.2)
-
+    def shoot(self, automatic=False):
+        """Override để phát âm thanh khi bắn (giữ logic gốc)."""
+        prev_ammo = self.current_ammo
+        prev_can = self.can_shoot
+        super().shoot(automatic)
+        # Nếu đạn giảm và trước đó có thể bắn => một viên đã được bắn
+        if self.current_ammo < prev_ammo and prev_can and not self.is_reloading:
+            try:
+                self.shoot_sound.play()
+            except Exception:
+                pass
+            self._recoil()
     def _recoil(self):
         """Hiệu ứng giật (Súng lục giật nhanh hơn, nhẹ hơn AK)"""
         # Súng giật lùi

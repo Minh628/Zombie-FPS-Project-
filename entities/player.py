@@ -98,7 +98,7 @@ class Player(FirstPersonController):
         super().update()
 
         if held_keys['left mouse']:
-            self.current_weapon.shoot()
+            self.current_weapon.shoot(automatic=True)
         # Sprint khi giữ Shift
         if held_keys['left shift']:
             self.speed = self.sprint_speed
@@ -121,7 +121,7 @@ class Player(FirstPersonController):
 
         # Bắn
         if key == 'left mouse down':
-            self.current_weapon.shoot()
+            self.current_weapon.shoot(automatic=False)
 
         # Nạp đạn
         elif key == 'r':

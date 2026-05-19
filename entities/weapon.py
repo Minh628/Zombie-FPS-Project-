@@ -48,7 +48,7 @@ class WeaponBase(Entity):
 
     # KHÔNG có input() - Player sẽ gọi trực tiếp
 
-    def shoot(self):
+    def shoot(self, automatic=False):
         """Bắn / tấn công. Có thể override ở class con."""
         if not self.can_shoot or self.is_reloading:
             return
