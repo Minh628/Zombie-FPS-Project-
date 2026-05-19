@@ -54,6 +54,7 @@ class Pistol(WeaponBase):
 
     def _recoil(self):
         """Hiệu ứng giật (Súng lục giật nhanh hơn, nhẹ hơn AK)"""
+        # Súng giật lùi
         self.animate_position(
             self._base_pos + Vec3(0, 0.03, -0.06), duration=0.03
         )
@@ -61,3 +62,20 @@ class Pistol(WeaponBase):
             lambda: self.animate_position(self._base_pos, duration=0.1),
             delay=0.03
         )
+
+        # Giật camera lên (ít hơn AK47)
+        if hasattr(self.player, 'camera_pivot'):
+            self.player.camera_pivot.rotation_x -= 0.8
+            # Phục hồi một phần độ giật
+            invoke(lambda: setattr(self.player.camera_pivot, 'rotation_x', self.player.camera_pivot.rotation_x + 0.3), delay=0.06)
+            
+        # Hiệu ứng lửa đạn (Muzzle flash)
+        muzzle_flash = Entity(
+            parent=self,
+            model='sphere',
+            color=color.orange,
+            scale=0.05,
+            position=Vec3(0, 0.15, 0.6), # Vị trí đầu nòng súng lục
+            unlit=True
+        )
+        destroy(muzzle_flash, delay=0.04)

@@ -57,6 +57,7 @@ class AK47(WeaponBase):
 
     def _recoil(self):
         """Hiệu ứng giật"""
+        # Súng giật lùi
         self.animate_position(
             self._base_pos + Vec3(0, 0.05, -0.1), duration=0.05
         )
@@ -64,3 +65,20 @@ class AK47(WeaponBase):
             lambda: self.animate_position(self._base_pos, duration=0.15),
             delay=0.05
         )
+        
+        # Giật camera lên
+        if hasattr(self.player, 'camera_pivot'):
+            self.player.camera_pivot.rotation_x -= 1.5
+            # Phục hồi một phần độ giật để camera không bị lệch lên quá nhanh
+            invoke(lambda: setattr(self.player.camera_pivot, 'rotation_x', self.player.camera_pivot.rotation_x + 0.5), delay=0.08)
+            
+        # Hiệu ứng lửa đạn (Muzzle flash)
+        muzzle_flash = Entity(
+            parent=self,
+            model='sphere',
+            color=color.yellow,
+            scale=0.08,
+            position=Vec3(-0.05, 0.1, 0.8), # Vị trí đầu nòng súng (khoảng chừng)
+            unlit=True
+        )
+        destroy(muzzle_flash, delay=0.05)

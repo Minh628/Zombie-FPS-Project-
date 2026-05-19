@@ -1,6 +1,7 @@
 # zombie_base.py - Class gốc của zombie
 from ursina import *
 from core.config import ZOMBIE_BASE_HEALTH, ZOMBIE_BASE_SPEED, ZOMBIE_BASE_DAMAGE
+from core.config import SOUNDS_DIR
 from core.utils import distance_between, direction_to
 
 
@@ -12,9 +13,9 @@ class ZombieBase(Entity):
 
     def __init__(self, position=Vec3(0, 0, 0), player=None, **kwargs):
         super().__init__(
-            model='cube',
+            model='assets/models/zombie/zombie.gltf',
             scale=(1, 2, 1),
-            color=color.green,
+            color=color.white,
             position=position,
             collider='box',
             **kwargs
@@ -32,6 +33,16 @@ class ZombieBase(Entity):
         self.gravity = 25.0
         self.ground_snap_distance = 0.6
         self.ground_check_distance = 6.0
+        self.moan_interval = 4.5
+        self._moan_timer = 0.0
+
+        # Âm thanh zombie
+        self.moan_sound = Audio(f'{SOUNDS_DIR}/zombie_moan.ogg', autoplay=False, loop=False)
+        self.death_sound = Audio(f'{SOUNDS_DIR}/zombie_death.ogg', autoplay=False, loop=False)
+        self.take_damage_sound = Audio(f'{SOUNDS_DIR}/zombie_take_damage.ogg', autoplay=False, loop=False)
+        self.moan_sound.volume = 0.65
+        self.death_sound.volume = 0.75
+        self.take_damage_sound.volume = 0.85
 
         # Callbacks
         self.on_death = None
@@ -80,6 +91,12 @@ class ZombieBase(Entity):
 
         # Quay mặt về phía player
         self.look_at_2d(self.player.position, axis='y')
+
+        # Rên rỉ định kỳ khi còn sống
+        self._moan_timer += time.dt
+        if self._moan_timer >= self.moan_interval:
+            self._moan_timer = 0.0
+            self._play_moan()
 
         # Kiểm tra tấn công
         dist = distance_between(self, self.player)
@@ -130,6 +147,7 @@ class ZombieBase(Entity):
             return
 
         self.can_attack = False
+        self._play_moan()
         self.player.take_damage(self.damage)
         print(f'[Zombie] Attacked player for {self.damage} damage!')
 
@@ -146,6 +164,7 @@ class ZombieBase(Entity):
 
         self.health -= damage
         self.health = max(0, self.health)
+        self.take_damage_sound.play()
 
         # Hiệu ứng nhấp nháy đỏ khi trúng đạn
         self.blink(color.red, duration=0.15)
@@ -160,9 +179,17 @@ class ZombieBase(Entity):
         self.is_alive = False
         print('[Zombie] Zombie died!')
 
+        
+        invoke(self.death_sound.play, delay=0.18)
+
         if self.on_death:
             self.on_death(self)
 
         # Animation chết: thu nhỏ rồi destroy
         self.animate_scale(Vec3(0, 0, 0), duration=0.3)
         destroy(self, delay=0.5)
+
+    def _play_moan(self):
+        if not self.is_alive:
+            return
+        self.moan_sound.play()
