@@ -54,8 +54,11 @@ class Knife(WeaponBase):
         self._base_pos = Vec3(0.397, -0.319, 1.613) # Đã đồng bộ với model_pos bạn tự tune
         self._base_rot = Vec3(0, 0, 0)
 
-    def shoot(self):
+    def shoot(self, automatic=False):
         """Override: Hành động chém dao."""
+        if automatic:
+            return  # Dao không chém liên tục khi giữ chuột
+            
         if not self.can_shoot:
             return
 
