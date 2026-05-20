@@ -107,6 +107,7 @@ class GameManager(Entity):
         self.state = GameState.PLAYING
         self.score = 0
         self.zombies_killed = 0
+        self.play_time = 0
         self.play_start_time = _time.time()
 
         # Player tự lo: hồi sinh + reset vũ khí
@@ -143,8 +144,9 @@ class GameManager(Entity):
 
     def game_over(self):
         """Đạo diễn hô: KẾT THÚC!"""
+        if self.state != GameState.PLAYING:
+            return
         self.state = GameState.GAME_OVER
-        self.play_time = _time.time() - self.play_start_time
         application.paused = False
 
         # Dừng level
@@ -229,6 +231,7 @@ class GameManager(Entity):
     def update(self):
         """Mỗi frame: chỉ gọi level."""
         if self.state == GameState.PLAYING:
+            self.play_time += time.dt
             self.level.update_waves()
 
     def input(self, key):
