@@ -1,7 +1,10 @@
 # zombie_base.py - Class gốc của zombie
 from ursina import *
-from core.config import ZOMBIE_BASE_HEALTH, ZOMBIE_BASE_SPEED, ZOMBIE_BASE_DAMAGE
-from core.config import SOUNDS_DIR
+from direct.actor.Actor import Actor
+from core.config import (
+    ZOMBIE_BASE_HEALTH, ZOMBIE_BASE_SPEED, ZOMBIE_BASE_DAMAGE,
+    SOUNDS_DIR, MODELS_DIR
+)
 from core.utils import distance_between, direction_to
 
 
@@ -13,13 +16,18 @@ class ZombieBase(Entity):
 
     def __init__(self, position=Vec3(0, 0, 0), player=None, **kwargs):
         super().__init__(
-            model='assets/models/zombie/zombie.gltf',
-            scale=(1, 2, 1),
-            color=color.white,
+            model=None,
+            scale=(1,1.2,1),
             position=position,
-            collider='box',
+            collider=None,
             **kwargs
         )
+
+        self.actor = None
+        self._anim_names = []
+        self._current_anim = None
+        self.facing_offset_y = 180
+        self._setup_actor()
         self.player = player
         self.max_health = ZOMBIE_BASE_HEALTH
         self.health = self.max_health
@@ -46,6 +54,54 @@ class ZombieBase(Entity):
 
         # Callbacks
         self.on_death = None
+
+    def _setup_actor(self):
+        model_path = f'{MODELS_DIR}/zombie/zombie22.glb'
+        self.actor = Actor(model_path)
+        self.model = self.actor
+        self.color = color.white
+
+        try:
+            self.actor.setColorScale(1,1,1,1)
+        except Exception:
+            pass
+
+
+        try:
+            self.actor.loadAnims({'anim': model_path})
+            self._anim_names = list(self.actor.getAnimNames())
+        except Exception:
+            self._anim_names = []
+
+        default_anim = self._pick_anim(['walk1_inplace'])
+        if default_anim:
+            self._play_anim(default_anim)
+
+        self._print_anim_info()
+
+        self.collider = 'box'
+
+    def _pick_anim(self, keywords):
+        if not self._anim_names:
+            return None
+        for keyword in keywords:
+            for name in self._anim_names:
+                if keyword.lower() in name.lower():
+                    return name
+        return self._anim_names[0]
+
+    def _play_anim(self, name):
+        if not name or name == self._current_anim:
+            return
+        try:
+            self.actor.loop(name)
+            self._current_anim = name
+        except Exception:
+            pass
+
+    def _print_anim_info(self):
+        print(f'[Zombie] Animations ({len(self._anim_names)}): {self._anim_names}')
+        print(f'[Zombie] Current animation: {self._current_anim}')
 
     def update(self):
         """Di chuyển về phía player mỗi frame (có collision check)."""
@@ -91,6 +147,9 @@ class ZombieBase(Entity):
 
         # Quay mặt về phía player
         self.look_at_2d(self.player.position, axis='y')
+        self.rotation_y += self.facing_offset_y
+
+
 
         # Rên rỉ định kỳ khi còn sống
         self._moan_timer += time.dt
