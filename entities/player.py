@@ -168,6 +168,7 @@ class Player(FirstPersonController):
         """Hồi sinh."""
         self.health = self.max_health
         self.is_alive = True
+        self.rotation = Vec3(0, -90, 0)  # Quay mặt về phía trước
         self.position = position
         if self.on_health_changed:
             self.on_health_changed(self.health, self.max_health)
