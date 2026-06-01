@@ -74,7 +74,7 @@ class ZombieBase(Entity):
         except Exception:
             self._anim_names = []
 
-        default_anim = self._pick_anim(['Walk_InPlace'])
+        default_anim = self._pick_anim(['Attack'])
         if default_anim:
             self._play_anim(default_anim)
 

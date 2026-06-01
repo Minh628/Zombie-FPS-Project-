@@ -164,7 +164,7 @@ class Player(FirstPersonController):
         if self.on_death:
             self.on_death()
 
-    def respawn(self, position=Vec3(0, 1, 0)):
+    def respawn(self, position=Vec3(50, 1, 0)):
         """Hồi sinh."""
         self.health = self.max_health
         self.is_alive = True
