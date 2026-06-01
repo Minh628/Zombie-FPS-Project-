@@ -1,5 +1,6 @@
 # level_01.py - Set up map, vị trí spawn quái, ánh sáng, hệ thống wave cho Level 1
 from ursina import *
+from ursina.shaders import lit_with_shadows_shader
 import random
 
 
@@ -59,6 +60,9 @@ class Level01:
             model='assets/models/map/gltf/map.gltf',
             rotation = Vec3(0, 180, 0),
             scale=0.6,
+            shader=lit_with_shadows_shader,
+            metallic=0.2,
+            roughness=0.8,
         )
         mapGLTF.position=Vec3(0, 0, 0)
 
@@ -69,11 +73,19 @@ class Level01:
         self.entities.append(self.sky)
 
     def _setup_lighting(self):
-        """Thiết lập ánh sáng cho level."""
-        sun = DirectionalLight()
-        sun.look_at(Vec3(1, -1, -1))
-        self.entities.append(sun)
+        """Thiết lập ánh sáng tối ưu cho không gian 3D."""
+        # 1. Tăng độ phân giải bóng để sắc nét hơn (mặc định của Ursina đôi khi hơi thấp)
+        sun = DirectionalLight(y=2, z=3, shadows=True)
+        sun.shadow_map_resolution = (2048, 2048) # Tùy chỉnh để bóng mượt hơn
+        
+        # 2. Điều chỉnh hướng nhìn (LookAt)
+        # Vec3(1, -1, -1) là ổn, nhưng hãy thử điều chỉnh để bóng đổ dài hơn nếu muốn cảm giác chiều tà/u ám
+        sun.look_at(Vec3(1, -5, -2)) 
 
+        # 3. AmbientLight: Để màu nhẹ hơn một chút để giữ độ tương phản
+        # Màu (80, 80, 80) sẽ giúp bóng đổ đậm hơn, tạo độ sâu hơn là (100, 100, 100)
+        AmbientLight(color=color.rgba(80, 80, 80, 255))
+        self.entities.append(sun)
     def _setup_spawn_points(self):
         """Định nghĩa các điểm spawn zombie."""
         self.spawn_points = [

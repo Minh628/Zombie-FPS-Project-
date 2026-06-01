@@ -63,6 +63,7 @@ class ZombieBase(Entity):
 
         try:
             self.actor.setColorScale(1,1,1,1)
+            self.actor.set_shader_auto()
         except Exception:
             pass
 
@@ -73,7 +74,7 @@ class ZombieBase(Entity):
         except Exception:
             self._anim_names = []
 
-        default_anim = self._pick_anim(['walk1_inplace'])
+        default_anim = self._pick_anim(['Walk_InPlace'])
         if default_anim:
             self._play_anim(default_anim)
 
@@ -95,6 +96,7 @@ class ZombieBase(Entity):
             return
         try:
             self.actor.loop(name)
+            self.actor.setPlayRate(0.7, name)
             self._current_anim = name
         except Exception:
             pass
