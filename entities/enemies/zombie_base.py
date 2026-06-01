@@ -26,6 +26,8 @@ class ZombieBase(Entity):
         self.actor = None
         self._anim_names = []
         self._current_anim = None
+        self._walk_anim = None
+        self._attack_anim = None
         self.facing_offset_y = 180
         self._setup_actor()
         self.player = player
@@ -62,8 +64,38 @@ class ZombieBase(Entity):
         self.color = color.white
 
         try:
-            self.actor.setColorScale(1,1,1,1)
+            self.actor.setColorScale(1, 1, 1, 1)
             self.actor.set_shader_auto()
+        except Exception:
+            pass
+
+        shader_set = False
+        try:
+            from ursina.shaders import pbr_shader
+            self.actor.set_shader(pbr_shader)
+            shader_set = True
+        except Exception:
+            pass
+
+        if not shader_set:
+            try:
+                from ursina.shaders import lit_shader
+                self.actor.set_shader(lit_shader)
+            except Exception:
+                pass
+
+        try:
+            if hasattr(self.actor, 'set_light_off'):
+                self.actor.set_light_off()
+            elif hasattr(self.actor, 'setLightOff'):
+                self.actor.setLightOff()
+
+            if hasattr(scene, 'lights') and scene.lights:
+                for light in scene.lights:
+                    if hasattr(self.actor, 'set_light'):
+                        self.actor.set_light(light)
+                    elif hasattr(self.actor, 'setLight'):
+                        self.actor.setLight(light)
         except Exception:
             pass
 
@@ -74,10 +106,12 @@ class ZombieBase(Entity):
         except Exception:
             self._anim_names = []
 
-        default_anim = self._pick_anim(['Attack'])
-        if default_anim:
-            self._play_anim(default_anim)
-
+        self._walk_anim = self._pick_anim(['Walk_InPlace', 'Walk', 'Run', 'Idle'])
+        self._attack_anim = self._pick_anim(['Attack', 'Bite', 'Hit'])
+        if self._walk_anim:
+            self._play_anim(self._walk_anim)
+        elif self._attack_anim:
+            self._play_anim(self._attack_anim)
         self._print_anim_info()
 
         self.collider = 'box'
@@ -96,7 +130,7 @@ class ZombieBase(Entity):
             return
         try:
             self.actor.loop(name)
-            self.actor.setPlayRate(0.7, name)
+            # self.actor.setPlayRate(0.7, name)
             self._current_anim = name
         except Exception:
             pass
@@ -163,6 +197,8 @@ class ZombieBase(Entity):
         dist = distance_between(self, self.player)
         if dist <= self.attack_range and self.can_attack:
             self.attack()
+        elif dist > self.attack_range:
+            self._play_anim(self._walk_anim)
 
     def _half_height(self):
         if hasattr(self, 'scale_y'):
@@ -209,6 +245,7 @@ class ZombieBase(Entity):
 
         self.can_attack = False
         self._play_moan()
+        self._play_anim(self._attack_anim or "Attack")
         self.player.take_damage(self.damage)
         print(f'[Zombie] Attacked player for {self.damage} damage!')
 
@@ -228,7 +265,11 @@ class ZombieBase(Entity):
         self.take_damage_sound.play()
 
         # Hiệu ứng nhấp nháy đỏ khi trúng đạn
-        self.blink(color.red, duration=0.15)
+        if self.actor:
+            self.actor.setColorScale(2, 0.5, 0.5, 1)
+            invoke(self.actor.setColorScale, 1, 1, 1, 1, delay=0.15)
+        else:
+            self.blink(color.red, duration=0.15)
 
         print(f'[Zombie] Took {damage} damage! Health: {self.health}/{self.max_health}')
 
