@@ -98,7 +98,7 @@ class Player(FirstPersonController):
         super().update()
 
         if held_keys['left mouse']:
-            self.current_weapon.shoot(automatic=True)
+            self.attack(automatic=True)
         # Sprint khi giữ Shift
         if held_keys['left shift']:
             self.speed = self.sprint_speed
@@ -121,7 +121,7 @@ class Player(FirstPersonController):
 
         # Bắn
         if key == 'left mouse down':
-            self.current_weapon.shoot(automatic=False)
+            self.attack(automatic=False)
 
         # Nạp đạn
         elif key == 'r':
@@ -138,6 +138,9 @@ class Player(FirstPersonController):
     # ==============================================================
     # MÁU & CHẾT
     # ==============================================================
+
+    def attack(self,automatic=False):
+        self.current_weapon.shoot(automatic=automatic)
 
     def take_damage(self, damage):
         """Nhận sát thương."""
