@@ -58,7 +58,7 @@ class ZombieBase(Entity):
         self.on_death = None
 
     def _setup_actor(self):
-        model_path = f'{MODELS_DIR}/zombie/zombie22.glb'
+        model_path = f'{MODELS_DIR}/zombie/zombie27run.glb'
         self.actor = Actor(model_path)
         self.model = self.actor
         self.color = color.white
@@ -107,7 +107,7 @@ class ZombieBase(Entity):
             self._anim_names = []
 
         self._walk_anim = self._pick_anim(['Walk_InPlace', 'Walk', 'Run', 'Idle'])
-        self._attack_anim = self._pick_anim(['Attack', 'Bite', 'Hit'])
+        self._attack_anim = self._pick_anim(['Attack.001', 'Bite', 'Hit'])
         if self._walk_anim:
             self._play_anim(self._walk_anim)
         elif self._attack_anim:
