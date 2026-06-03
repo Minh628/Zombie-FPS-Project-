@@ -1,14 +1,14 @@
 from ursina import *
-
+from core.config import MODELS_DIR
 class AmmoBox(Entity):
     """
     Hộp đạn spawn ở các wave. Khi player chạm vào sẽ nạp đầy băng đạn hiện tại.
     """
     def __init__(self, position, player, **kwargs):
         super().__init__(
-            model='assets/models/items/ammoBox.gltf',
+            model=f'{MODELS_DIR}/items/ammoBox.gltf',
             position=position,
-            scale=1,
+            scale=0.3,
             collider='box',
             **kwargs
         )

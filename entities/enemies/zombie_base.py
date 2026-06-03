@@ -3,7 +3,7 @@ from ursina import *
 from direct.actor.Actor import Actor
 from ursina.shaders import lit_with_shadows_shader
 from core.config import (
-    ZOMBIE_BASE_HEALTH, ZOMBIE_BASE_SPEED, ZOMBIE_BASE_DAMAGE,
+    ZOMBIE_CONFIG,
     SOUNDS_DIR, MODELS_DIR
 )
 from core.utils import distance_between, direction_to
@@ -15,7 +15,8 @@ class ZombieBase(Entity):
     Xử lý: di chuyển về phía player (có collision), tấn công, nhận damage, chết.
     """
 
-    def __init__(self, position=Vec3(0, 0, 0), player=None, **kwargs):
+    def __init__(self, zombie_type='normal', position=Vec3(0, 0, 0), player=None, **kwargs):
+        self.cfg = ZOMBIE_CONFIG[zombie_type]
         super().__init__(
             model=None,
             position=position,
@@ -31,10 +32,10 @@ class ZombieBase(Entity):
         self.facing_offset_y = 180
         self._setup_actor()
         self.player = player
-        self.max_health = ZOMBIE_BASE_HEALTH
+        self.max_health = self.cfg['health']
         self.health = self.max_health
-        self.speed = ZOMBIE_BASE_SPEED
-        self.damage = ZOMBIE_BASE_DAMAGE
+        self.speed = self.cfg['speed']
+        self.damage = self.cfg['damage']
         self.attack_range = 2.0
         self.attack_cooldown = 1.5
         self.can_attack = True
@@ -58,7 +59,7 @@ class ZombieBase(Entity):
         self.on_death = None
 
     def _setup_actor(self):
-        model_path = f'{MODELS_DIR}/zombie/zombie26.glb'
+        model_path = self.cfg['model']
         self.actor = Actor(model_path)
         self.model = self.actor
         try:
@@ -75,8 +76,8 @@ class ZombieBase(Entity):
         except Exception:
             self._anim_names = []
 
-        self._walk_anim = self._pick_anim(['Walk_InPlace', 'Walk', 'Run', 'Idle'])
-        self._attack_anim = self._pick_anim(['Attack.001', 'Bite', 'Hit'])
+        self._walk_anim = self._pick_anim([self.cfg['anims']['walk'], 'Walk_InPlace', 'Walk', 'Run', 'Idle'])
+        self._attack_anim = self._pick_anim([self.cfg['anims']['attack'], 'Attack.001', 'Bite', 'Hit'])
         if self._walk_anim:
             self._play_anim(self._walk_anim)
         elif self._attack_anim:

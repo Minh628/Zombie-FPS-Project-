@@ -61,6 +61,7 @@ ZOMBIE_BASE_SPEED = 2
 ZOMBIE_BASE_DAMAGE = 10
 ZOMBIE_FAST_SPEED = 5
 ZOMBIE_FAST_HEALTH = 75
+ZOMBIE_FAST_DAMAGE = 10
 ZOMBIE_SPAWN_INTERVAL = 3.0     # Giây giữa mỗi lần spawn
 
 # --- Cài đặt âm thanh ---
@@ -79,3 +80,21 @@ MAIN_MENU_BG = f'{IMAGES_DIR}/welcome_background.jpg'
 
 # --- Database ---
 DATABASE_PATH = 'data/save_data.db'
+
+# --- Cấu hình mở rộng cho Zombie (Gộp vào config.py) ---
+ZOMBIE_CONFIG = {
+    'normal': {
+        'model': f'{MODELS_DIR}/zombie/zombiebase.glb',
+        'health': ZOMBIE_BASE_HEALTH,
+        'speed': ZOMBIE_BASE_SPEED,
+        'damage': ZOMBIE_BASE_DAMAGE,
+        'anims': {'walk': 'Walk_InPlace', 'attack': 'Attack.001'}
+    },
+    'fast': {
+        'model': f'{MODELS_DIR}/zombie/zombie_fast.glb', # Đường dẫn model mới
+        'health': ZOMBIE_FAST_HEALTH,
+        'speed': ZOMBIE_FAST_SPEED,
+        'damage': ZOMBIE_FAST_DAMAGE,
+        'anims': {'walk': 'Run', 'attack': 'Hit'}
+    }
+}
