@@ -2,6 +2,9 @@
 from ursina import *
 from ursina.shaders import lit_with_shadows_shader
 import random
+from core.config import (
+    SOUNDS_DIR
+)
 
 
 class Level01:
@@ -27,6 +30,10 @@ class Level01:
         self.wave_transition_timer = 0
         self.is_running = False
         self.player = None
+
+        # Âm thanh qua 1 wave
+        self.congratulations_sound = Audio(f'{SOUNDS_DIR}/congratulations.mp3', autoplay=False, loop=False)
+        self.congratulations_sound.volume = 0.8
 
         # Callbacks → GameManager lắng nghe
         self.on_zombie_killed = None     # (points) → cộng điểm
@@ -92,11 +99,6 @@ class Level01:
             Vec3(37,0,-39),
             Vec3(-60,0,35),
             Vec3(-71,0,-34)
-            
-            # , Vec3(0, 0, -30),
-            # Vec3(30, 0, -30), Vec3(0, 0, 30),
-            # Vec3(0, 0, 30), Vec3(0, 0, -30),
-            # Vec3(0, 0, -30), Vec3(0, 0, 30),
         ]
 
     # ==============================================================
@@ -194,6 +196,7 @@ class Level01:
                 and self.zombies_to_spawn > 0):
             self.is_wave_transitioning = True
             self.wave_transition_timer = 5.0
+            self.congratulations_sound.play()
             if self.on_wave_complete:
                 self.on_wave_complete(self.wave)
 

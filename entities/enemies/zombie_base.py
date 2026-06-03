@@ -1,6 +1,7 @@
 # zombie_base.py - Class gốc của zombie
 from ursina import *
 from direct.actor.Actor import Actor
+from ursina.shaders import lit_with_shadows_shader
 from core.config import (
     ZOMBIE_BASE_HEALTH, ZOMBIE_BASE_SPEED, ZOMBIE_BASE_DAMAGE,
     SOUNDS_DIR, MODELS_DIR
@@ -61,41 +62,11 @@ class ZombieBase(Entity):
         model_path = f'{MODELS_DIR}/zombie/zombie27run.glb'
         self.actor = Actor(model_path)
         self.model = self.actor
-        self.color = color.white
-
+        self.actor.shader = lit_with_shadows_shader
         try:
-            self.actor.setColorScale(1, 1, 1, 1)
-            self.actor.set_shader_auto()
-        except Exception:
-            pass
-
-        shader_set = False
-        try:
-            from ursina.shaders import pbr_shader
-            self.actor.set_shader(pbr_shader)
-            shader_set = True
-        except Exception:
-            pass
-
-        if not shader_set:
-            try:
-                from ursina.shaders import lit_shader
-                self.actor.set_shader(lit_shader)
-            except Exception:
-                pass
-
-        try:
-            if hasattr(self.actor, 'set_light_off'):
-                self.actor.set_light_off()
-            elif hasattr(self.actor, 'setLightOff'):
-                self.actor.setLightOff()
-
-            if hasattr(scene, 'lights') and scene.lights:
-                for light in scene.lights:
-                    if hasattr(self.actor, 'set_light'):
-                        self.actor.set_light(light)
-                    elif hasattr(self.actor, 'setLight'):
-                        self.actor.setLight(light)
+            self.actor.setColorScale(4, 4, 4, 1)
+            self.actor.set_shader_input('roughness', 0.8)
+            self.actor.set_shader_input('metallic', 0.2)
         except Exception:
             pass
 
@@ -130,7 +101,6 @@ class ZombieBase(Entity):
             return
         try:
             self.actor.loop(name)
-            # self.actor.setPlayRate(0.7, name)
             self._current_anim = name
         except Exception:
             pass
@@ -267,7 +237,7 @@ class ZombieBase(Entity):
         # Hiệu ứng nhấp nháy đỏ khi trúng đạn
         if self.actor:
             self.actor.setColorScale(2, 0.5, 0.5, 1)
-            invoke(self.actor.setColorScale, 1, 1, 1, 1, delay=0.15)
+            invoke(self.actor.setColorScale, 4, 4, 4, 1, delay=0.15)
         else:
             self.blink(color.red, duration=0.15)
 
