@@ -57,6 +57,25 @@ class ZombieBase(Entity):
         self.death_sound.volume = 0.75
         self.take_damage_sound.volume = 0.85
 
+        # Thanh máu trên đầu zombie (3D billboard)
+        self.health_bar_bg = Entity(
+            parent=self,
+            y=2.5, # Độ cao trên đầu
+            model='quad',
+            color=color.black,
+            scale=(1.2, 0.15),
+            billboard=True
+        )
+        self.health_bar = Entity(
+            parent=self.health_bar_bg,
+            model='quad',
+            color=color.red,
+            scale=(0.95, 0.8), # Tỉ lệ so với nền
+            origin=(-0.5, 0),  # Gốc bên trái để thu nhỏ dần từ phải sang trái
+            x=-0.475,
+            z=-0.01 # Đẩy nhẹ lên trước để không bị z-fighting
+        )
+
         # Callbacks
         self.on_death = None
 
@@ -292,6 +311,11 @@ class ZombieBase(Entity):
         self.health = max(0, self.health)
         self.take_damage_sound.play()
 
+        # Cập nhật health bar
+        if hasattr(self, 'health_bar') and self.health_bar:
+            health_ratio = self.health / self.max_health
+            self.health_bar.scale_x = max(0.001, 0.95 * health_ratio)
+
         # Hiệu ứng nhấp nháy đỏ khi trúng đạn
         if self.actor:
             self.actor.setColorScale(2, 0.5, 0.5, 1)
@@ -309,7 +333,12 @@ class ZombieBase(Entity):
         self.is_alive = False
         print('[Zombie] Zombie died!')
 
-
+        # Ẩn health bar khi chết
+        if hasattr(self, 'health_bar_bg') and self.health_bar_bg:
+            destroy(self.health_bar_bg)
+            self.health_bar_bg = None
+            self.health_bar = None
+        
         invoke(self.death_sound.play, delay=0.18)
 
         if self.on_death:
