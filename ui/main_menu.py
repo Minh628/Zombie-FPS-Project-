@@ -1,6 +1,6 @@
 # main_menu.py - Màn hình bắt đầu game, bảng xếp hạng
 from ursina import *
-
+from core.config import SOUNDS_DIR
 from core import config
 
 
@@ -12,6 +12,7 @@ class MainMenu(Entity):
 
     def __init__(self, **kwargs):
         super().__init__(parent=camera.ui, **kwargs)
+        self.background_sound = Audio(f'{SOUNDS_DIR}/background_welcome.mp3', autoplay=False, loop=True, volume=0.8)
 
         # Nền menu (dùng ảnh trong config, fallback nền đen)
         bg_texture = load_texture(config.MAIN_MENU_BG)
@@ -167,7 +168,9 @@ class MainMenu(Entity):
         """Hiện menu."""
         self.enabled = True
         mouse.locked = False
+        self.background_sound.play()
 
     def hide(self):
         """Ẩn menu."""
         self.enabled = False
+        self.background_sound.stop()
