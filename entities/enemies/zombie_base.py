@@ -62,9 +62,8 @@ class ZombieBase(Entity):
         model_path = f'{MODELS_DIR}/zombie/zombie27run.glb'
         self.actor = Actor(model_path)
         self.model = self.actor
-        self.actor.shader = lit_with_shadows_shader
         try:
-            self.actor.setColorScale(4, 4, 4, 1)
+            self.actor.setColorScale(4,4,4,1)
             self.actor.set_shader_input('roughness', 0.8)
             self.actor.set_shader_input('metallic', 0.2)
         except Exception:
