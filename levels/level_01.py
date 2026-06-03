@@ -1,4 +1,5 @@
 # level_01.py - Set up map, vị trí spawn quái, ánh sáng, hệ thống wave cho Level 1
+# Tối ưu: Object Pooling - Khởi tạo sẵn zombie vào RAM, tái sử dụng thay vì destroy/new
 from ursina import *
 from ursina.shaders import lit_with_shadows_shader
 import random
@@ -12,6 +13,7 @@ class Level01:
     Level 1 - Thiết lập map, ánh sáng, vị trí spawn zombie.
     Tự quản lý hệ thống wave: spawn zombie, đếm wave, chuyển wave.
     Map 3D chỉ load 1 lần duy nhất, khi chơi lại chỉ reset wave.
+    Tối ưu: Object Pooling cho zombie (40 Normal + 20 Fast pre-allocated).
     """
 
     def __init__(self):
@@ -19,8 +21,9 @@ class Level01:
         self.entities = []
         self.ammo_boxes = []
 
-        # --- Hệ thống Wave ---
+        # --- Hệ thống Wave & Object Pool ---
         self.active_zombies = []
+        self.zombie_pool = []       # Mảng quản lý tổng thể Object Pool
         self.wave = 1
         self.zombies_per_wave = 5
         self.zombies_spawned_this_wave = 0
@@ -45,18 +48,46 @@ class Level01:
         self._setup_environment()
         self._setup_lighting()
         self._setup_spawn_points()
+        self._create_zombie_pool()   # Đúc sẵn quái vào RAM
+
+    # ==============================================================
+    # OBJECT POOL: Khởi tạo sẵn zombie vào bộ nhớ
+    # ==============================================================
+
+    def _create_zombie_pool(self):
+        """Khởi tạo sẵn một lực lượng quái nhàn rỗi nằm ngầm dưới map."""
+        from entities.enemies.zombie_base import ZombieBase
+        from entities.enemies.zombie_fast import ZombieFast
+
+        # Tạo sẵn 40 Normal Zombie và 20 Fast Zombie ẩn dưới map
+        for _ in range(40):
+            z = ZombieBase(position=Vec3(0, -999, 0))
+            z.despawn()
+            self.zombie_pool.append(z)
+
+        for _ in range(20):
+            z = ZombieFast(position=Vec3(0, -999, 0))
+            z.despawn()
+            self.zombie_pool.append(z)
+
+    def _get_zombie_from_pool(self, is_fast=False):
+        """Tìm một thực thể đang rảnh trong pool phù hợp với chủng loại yêu cầu."""
+        from entities.enemies.zombie_fast import ZombieFast
+
+        for zombie in self.zombie_pool:
+            if not zombie.enabled:  # Kiểm tra trạng thái rảnh (đã despawn)
+                if is_fast and isinstance(zombie, ZombieFast):
+                    return zombie
+                elif not is_fast and not isinstance(zombie, ZombieFast):
+                    return zombie
+        return None
 
     # ==============================================================
     # MAP SETUP (chỉ gọi 1 lần trong __init__)
     # ==============================================================
 
-
     def _setup_environment(self):
         """Tạo môi trường map Level 1."""
-
-        # ===============================================================
-        # ===============================================================
-
         mapOBJ = Entity(
             model='assets/models/map/obj/map.obj', collider='mesh',
             position=Vec3(0, 0, 0),
@@ -66,33 +97,26 @@ class Level01:
 
         mapGLTF = Entity(
             model='assets/models/map/gltf/map.gltf',
-            rotation = Vec3(0, 180, 0),
+            rotation=Vec3(0, 180, 0),
             shader=lit_with_shadows_shader,
             metallic=0.2,
             roughness=0.8,
         )
-        mapGLTF.position=Vec3(0, 0, 0)
-
-        # ===============================================================
-        # ===============================================================
+        mapGLTF.position = Vec3(0, 0, 0)
 
         self.sky = Sky()
         self.entities.append(self.sky)
 
     def _setup_lighting(self):
         """Thiết lập ánh sáng tối ưu cho không gian 3D."""
-        # 1. Tăng độ phân giải bóng để sắc nét hơn (mặc định của Ursina đôi khi hơi thấp)
         sun = DirectionalLight(y=2, z=3, shadows=True)
-        sun.shadow_map_resolution = (2048, 2048) # Tùy chỉnh để bóng mượt hơn
-        
-        # 2. Điều chỉnh hướng nhìn (LookAt)
-        # Vec3(1, -1, -1) là ổn, nhưng hãy thử điều chỉnh để bóng đổ dài hơn nếu muốn cảm giác chiều tà/u ám
-        sun.look_at(Vec3(1, -5, -2)) 
+        sun.shadow_map_resolution = (2048, 2048)  # Tùy chỉnh để bóng mượt hơn
+        sun.look_at(Vec3(1, -5, -2))
 
-        # 3. AmbientLight: Để màu nhẹ hơn một chút để giữ độ tương phản
-        # Màu (80, 80, 80) sẽ giúp bóng đổ đậm hơn, tạo độ sâu hơn là (100, 100, 100)
+        # AmbientLight: Màu nhẹ để giữ độ tương phản, tạo độ sâu
         AmbientLight(color=color.rgba(80, 80, 80, 255))
         self.entities.append(sun)
+
     def _setup_spawn_points(self):
         """Định nghĩa các điểm spawn zombie."""
         self.spawn_points = [
@@ -156,30 +180,41 @@ class Level01:
             self.spawn_timer = self.spawn_interval
 
     def _spawn_zombie(self):
-        """Spawn một zombie."""
-        from entities.enemies.zombie_base import ZombieBase
-        from entities.enemies.zombie_fast import ZombieFast
-
+        """Spawn zombie từ Object Pool thay vì khởi tạo mới từ đĩa."""
         if not self.player:
             return
 
         spawn_pos = random.choice(self.spawn_points)
         spawn_pos = Vec3(
-            spawn_pos.x + random.uniform(-5, 5), 1,
-            spawn_pos.z + random.uniform(-5, 5)
+            spawn_pos.x + random.uniform(-2, 2 ), 1,
+            spawn_pos.z + random.uniform(-2, 2)
         )
 
-        if self.wave >= 1 and random.random() < 0.3:
-            zombie = ZombieFast(position=spawn_pos, player=self.player)
-        else:
-            zombie = ZombieBase(position=spawn_pos, player=self.player)
+        # Xác định loại zombie cần gọi
+        want_fast = (self.wave >= 1 and random.random() < 0.3)
 
+        # Lấy quái từ pool RAM
+        zombie = self._get_zombie_from_pool(is_fast=want_fast)
+
+        # Nếu pool hết quái dự trữ, đúc khẩn cấp (fallback)
+        if not zombie:
+            from entities.enemies.zombie_base import ZombieBase
+            from entities.enemies.zombie_fast import ZombieFast
+            if want_fast:
+                zombie = ZombieFast(position=spawn_pos, player=self.player)
+            else:
+                zombie = ZombieBase(position=spawn_pos, player=self.player)
+            self.zombie_pool.append(zombie)
+
+        # Thiết lập callback và kích hoạt từ pool
         zombie.on_death = self._on_zombie_death
+        zombie.spawn_from_pool(spawn_pos, self.player)
+
         self.active_zombies.append(zombie)
         self.zombies_spawned_this_wave += 1
 
     def _on_zombie_death(self, zombie):
-        """Callback khi zombie chết → thông báo lên."""
+        """Callback khi zombie chết → thông báo lên GameManager."""
         from entities.enemies.zombie_fast import ZombieFast
         points = 150 if isinstance(zombie, ZombieFast) else 100
 
@@ -215,10 +250,10 @@ class Level01:
         self._spawn_ammo_boxes()
 
     def clear_zombies(self):
-        """Xóa tất cả zombie."""
+        """Trả tất cả zombie về pool (despawn) thay vì destroy."""
         for zombie in self.active_zombies[:]:
             if zombie:
-                destroy(zombie)
+                zombie.despawn()
         self.active_zombies.clear()
 
     def clear_ammo_boxes(self):
@@ -232,14 +267,14 @@ class Level01:
         """Spawn hộp đạn ở đầu mỗi wave."""
         self.clear_ammo_boxes()
         from entities.items.ammo_box import AmmoBox
-        
+
         positions = [
             Vec3(36, 1, -11),
             Vec3(36, 1, 31),
             Vec3(-18, 1, -21),
             Vec3(-37, 1, 16)
         ]
-        
+
         for pos in positions:
             box = AmmoBox(position=pos, player=self.player)
             self.ammo_boxes.append(box)
@@ -247,9 +282,13 @@ class Level01:
                 self.entities.append(box)
 
     def cleanup(self):
-        """Dọn dẹp toàn bộ (chỉ gọi khi thoát game thật sự)."""
+        """Hủy diệt thật sự khi thoát màn game - destroy cả pool."""
         self.clear_zombies()
         self.clear_ammo_boxes()
+        # Destroy toàn bộ pool khi thoát game thật sự
+        for zombie in self.zombie_pool:
+            destroy(zombie)
+        self.zombie_pool.clear()
         for entity in self.entities:
             destroy(entity)
         self.entities.clear()

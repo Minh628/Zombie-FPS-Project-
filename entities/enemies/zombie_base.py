@@ -1,7 +1,6 @@
-# zombie_base.py - Class gốc của zombie
+# zombie_base.py - Class gốc của zombie (Tối ưu: Object Pooling + Distance Culling)
 from ursina import *
 from direct.actor.Actor import Actor
-from ursina.shaders import lit_with_shadows_shader
 from core.config import (
     ZOMBIE_CONFIG,
     SOUNDS_DIR, MODELS_DIR
@@ -13,9 +12,11 @@ class ZombieBase(Entity):
     """
     Class gốc cho tất cả zombie.
     Xử lý: di chuyển về phía player (có collision), tấn công, nhận damage, chết.
+    Tối ưu: Object Pooling (spawn/despawn) + Distance Culling (ẩn render khi xa).
     """
 
     def __init__(self, zombie_type='normal', position=Vec3(0, 0, 0), player=None, **kwargs):
+        self.zombie_type = zombie_type  # Lưu lại loại zombie để quản lý pool
         self.cfg = ZOMBIE_CONFIG[zombie_type]
         super().__init__(
             model=None,
@@ -31,6 +32,7 @@ class ZombieBase(Entity):
         self._attack_anim = None
         self.facing_offset_y = 180
         self._setup_actor()
+
         self.player = player
         self.max_health = self.cfg['health']
         self.health = self.max_health
@@ -63,12 +65,11 @@ class ZombieBase(Entity):
         self.actor = Actor(model_path)
         self.model = self.actor
         try:
-            self.actor.setColorScale(4,4,4,1)
+            self.actor.setColorScale(4, 4, 4, 1)
             self.actor.set_shader_input('roughness', 0.8)
             self.actor.set_shader_input('metallic', 0.2)
         except Exception:
             pass
-
 
         try:
             self.actor.loadAnims({'anim': model_path})
@@ -78,10 +79,9 @@ class ZombieBase(Entity):
 
         self._walk_anim = self._pick_anim([self.cfg['anims']['walk'], 'Walk_InPlace', 'Walk', 'Run', 'Idle'])
         self._attack_anim = self._pick_anim([self.cfg['anims']['attack'], 'Attack.001', 'Bite', 'Hit'])
+
         if self._walk_anim:
             self._play_anim(self._walk_anim)
-        elif self._attack_anim:
-            self._play_anim(self._attack_anim)
         self._print_anim_info()
 
         self.collider = 'box'
@@ -107,13 +107,52 @@ class ZombieBase(Entity):
     def _print_anim_info(self):
         print(f'[Zombie] Animations ({len(self._anim_names)}): {self._anim_names}')
         print(f'[Zombie] Current animation: {self._current_anim}')
+    # ==============================================================
+    # OBJECT POOLING: Cơ chế vòng đời spawn/despawn
+    # ==============================================================
+
+    def spawn_from_pool(self, position, player):
+        """Kích hoạt lại zombie từ pool mà không cần nạp lại Model/Actor."""
+        self.position = position
+        self.player = player
+        self.health = self.max_health
+        self.is_alive = True
+        self.enabled = True
+        self.visible = True
+        self.scale = Vec3(1, 1, 1)  # Reset lại scale sau khi bị thu nhỏ lúc chết
+        self._moan_timer = 0.0
+        self.can_attack = True
+        self.vertical_velocity = 0.0
+        self._current_anim = None  # Reset để cho phép play lại anim walk
+        if self._walk_anim:
+            self._play_anim(self._walk_anim)
+
+    def despawn(self):
+        """Đưa zombie vào trạng thái ngủ đông - ẩn khỏi game nhưng giữ trong RAM."""
+        self.is_alive = False
+        self.enabled = False
+        self.visible = False
+        self.position = Vec3(0, -999, 0)  # Đẩy sâu xuống đất cách xa camera
+        self._current_anim = None
+
+    # ==============================================================
+    # UPDATE LOOP: Distance Culling + Logic di chuyển
+    # ==============================================================
 
     def update(self):
-        """Di chuyển về phía player mỗi frame (có collision check)."""
+        """Di chuyển về phía player mỗi frame (có collision check + distance culling)."""
         if not self.is_alive or not self.player:
             return
 
-        # Tính hướng đến player
+        # === TỐI ƯU CỐT LÕI: DISTANCE CULLING ===
+        dist = distance_between(self, self.player)
+
+        if dist > 45:
+            self.visible = False  # GPU ngừng render hoàn toàn (Draw Call = 0)
+        else:
+            self.visible = True   # Hiện lại khi player đến gần
+
+        # --- LOGIC DI CHUYỂN, RAYCAST & STEERING (CPU chạy độc lập với render) ---
         direction = direction_to(self, self.player)
         direction.y = 0
 
@@ -126,8 +165,8 @@ class ZombieBase(Entity):
         step_height = 0.6  # Chiều cao bậc thang tối đa
         ray_dist = self.speed * time.dt + 0.8
 
-        low_origin = self.position + Vec3(0, 0.2, 0) # Tia gót chân
-        high_origin = self.position + Vec3(0, 1.2, 0) # Tia ngực
+        low_origin = self.position + Vec3(0, 0.2, 0)   # Tia gót chân
+        high_origin = self.position + Vec3(0, 1.2, 0)   # Tia ngực
 
         low_hit = raycast(origin=low_origin, direction=direction, distance=ray_dist, ignore=[self, self.player])
         high_hit = raycast(origin=high_origin, direction=direction, distance=ray_dist, ignore=[self, self.player])
@@ -136,44 +175,34 @@ class ZombieBase(Entity):
         low_blocked = low_hit.hit and not hasattr(low_hit.entity, 'is_alive')
         high_blocked = high_hit.hit and not hasattr(high_hit.entity, 'is_alive')
 
-        moved = False
-
         if not low_blocked and not high_blocked:
             # Đường trống hoàn toàn -> Di chuyển bình thường
             self.position += move_amount
-            moved = True
         elif low_blocked and not high_blocked:
-            # 1. Khả năng leo bậc thang (Step Climbing)
-            # Tia dưới chạm, tia trên không chạm -> Bục thấp / Gờ đất
+            # Khả năng leo bậc thang (Step Climbing)
             self.y += step_height
             self.position += move_amount
-            moved = True
         else:
-            # 2. Né tường thông minh (Obstacle Avoidance / Steering)
-            # Tia trên bị chặn -> Gặp tường cao
+            # Né tường thông minh (Obstacle Avoidance / Steering)
             import math
             angles = [45, -45, 90, -90]
-            
+
             for angle in angles:
                 rad = math.radians(angle)
-                # Xoay vector direction đi 1 góc rad quanh trục Y
                 new_dx = direction.x * math.cos(rad) - direction.z * math.sin(rad)
                 new_dz = direction.x * math.sin(rad) + direction.z * math.cos(rad)
                 test_dir = Vec3(new_dx, 0, new_dz).normalized()
-                
+
                 test_high = raycast(origin=high_origin, direction=test_dir, distance=ray_dist, ignore=[self, self.player])
                 test_low = raycast(origin=low_origin, direction=test_dir, distance=ray_dist, ignore=[self, self.player])
-                
+
                 t_high_blocked = test_high.hit and not hasattr(test_high.entity, 'is_alive')
                 t_low_blocked = test_low.hit and not hasattr(test_low.entity, 'is_alive')
-                
+
                 if not t_high_blocked:
-                    # Nếu hướng mới có phía trên trống
                     if t_low_blocked:
-                        # Có bậc thấp cản hướng này -> Leo lên
                         self.y += step_height
                     self.position += test_dir * self.speed * time.dt
-                    moved = True
                     break
 
         self._apply_gravity_and_ground()
@@ -182,8 +211,6 @@ class ZombieBase(Entity):
         self.look_at_2d(self.player.position, axis='y')
         self.rotation_y += self.facing_offset_y
 
-
-
         # Rên rỉ định kỳ khi còn sống
         self._moan_timer += time.dt
         if self._moan_timer >= self.moan_interval:
@@ -191,11 +218,15 @@ class ZombieBase(Entity):
             self._play_moan()
 
         # Kiểm tra tấn công
-        dist = distance_between(self, self.player)
         if dist <= self.attack_range and self.can_attack:
             self.attack()
-        elif dist > self.attack_range:
+        elif dist > self.attack_range and self.visible:
+            # Chỉ update animation khi visible (tiết kiệm CPU cho bone animation)
             self._play_anim(self._walk_anim)
+
+    # ==============================================================
+    # CÁC HÀM PHỤ TRỢ
+    # ==============================================================
 
     def _half_height(self):
         if hasattr(self, 'scale_y'):
@@ -274,21 +305,21 @@ class ZombieBase(Entity):
             self.die()
 
     def die(self):
-        """Xử lý khi zombie chết."""
+        """Xử lý khi zombie chết: gọi despawn thay vì destroy để tái sử dụng qua pool."""
         self.is_alive = False
         print('[Zombie] Zombie died!')
 
-        
+
         invoke(self.death_sound.play, delay=0.18)
 
         if self.on_death:
             self.on_death(self)
 
-        # Animation chết: thu nhỏ rồi destroy
+        # Animation chết: thu nhỏ rồi despawn (trả về pool)
         self.animate_scale(Vec3(0, 0, 0), duration=0.3)
-        destroy(self, delay=0.5)
+        invoke(self.despawn, delay=0.5)
 
     def _play_moan(self):
-        if not self.is_alive:
-            return
+        if not self.is_alive or not self.visible:
+            return  # Không visible thì không phát tiếng rên (tiết kiệm audio channel)
         self.moan_sound.play()
