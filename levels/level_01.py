@@ -167,7 +167,7 @@ class Level01:
             spawn_pos.z + random.uniform(-5, 5)
         )
 
-        if self.wave >= 3 and random.random() < 0.3:
+        if self.wave >= 1 and random.random() < 0.3:
             zombie = ZombieFast(position=spawn_pos, player=self.player)
         else:
             zombie = ZombieBase(position=spawn_pos, player=self.player)

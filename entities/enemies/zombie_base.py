@@ -59,7 +59,7 @@ class ZombieBase(Entity):
         self.on_death = None
 
     def _setup_actor(self):
-        model_path = f'{MODELS_DIR}/zombie/zombie27run.glb'
+        model_path = f'{MODELS_DIR}/zombie/zombie26.glb'
         self.actor = Actor(model_path)
         self.model = self.actor
         try:

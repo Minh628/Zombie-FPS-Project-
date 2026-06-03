@@ -34,13 +34,13 @@ PISTOL_RANGE = 50
 
 # --- Cài đặt vũ khí: Knife (Phím 3) ---
 KNIFE_NAME = 'KNIFE'
-KNIFE_DAMAGE = 50
+KNIFE_DAMAGE = 10
 KNIFE_ATTACK_RATE = 0.5
 KNIFE_RANGE = 3.0
 
 # --- Cài đặt vũ khí: AK47 (Phím 4) ---
 AK47_NAME = 'AK47 DRAGON'
-AK47_DAMAGE = 35
+AK47_DAMAGE = 25
 AK47_FIRE_RATE = 0.1
 AK47_RELOAD_TIME = 2.5
 AK47_MAX_AMMO = 30
@@ -56,11 +56,11 @@ WEAPON_MAX_AMMO = RIFLE_MAX_AMMO
 WEAPON_TOTAL_AMMO = RIFLE_TOTAL_AMMO
 
 # --- Cài đặt Zombie ---
-ZOMBIE_BASE_HEALTH = 50
+ZOMBIE_BASE_HEALTH = 100
 ZOMBIE_BASE_SPEED = 2
 ZOMBIE_BASE_DAMAGE = 10
 ZOMBIE_FAST_SPEED = 5
-ZOMBIE_FAST_HEALTH = 30
+ZOMBIE_FAST_HEALTH = 75
 ZOMBIE_SPAWN_INTERVAL = 3.0     # Giây giữa mỗi lần spawn
 
 # --- Cài đặt âm thanh ---
@@ -74,6 +74,8 @@ MODELS_DIR = f'{ASSETS_DIR}/models'
 TEXTURES_DIR = f'{ASSETS_DIR}/textures'
 SOUNDS_DIR = f'{ASSETS_DIR}/sounds'
 FONTS_DIR = f'{ASSETS_DIR}/fonts'
+IMAGES_DIR = f'{ASSETS_DIR}/images'
+MAIN_MENU_BG = f'{IMAGES_DIR}/welcome_background.jpg'
 
 # --- Database ---
 DATABASE_PATH = 'data/save_data.db'

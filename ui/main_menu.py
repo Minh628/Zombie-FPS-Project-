@@ -1,6 +1,8 @@
 # main_menu.py - Màn hình bắt đầu game, bảng xếp hạng
 from ursina import *
 
+from core import config
+
 
 class MainMenu(Entity):
     """
@@ -11,11 +13,19 @@ class MainMenu(Entity):
     def __init__(self, **kwargs):
         super().__init__(parent=camera.ui, **kwargs)
 
-        # Nền đen phủ toàn màn hình
-        self.background = Entity(
-            parent=self, model='quad',
-            scale=5, color=color.black, z=0.5
-        )
+        # Nền menu (dùng ảnh trong config, fallback nền đen)
+        bg_texture = load_texture(config.MAIN_MENU_BG)
+        if bg_texture:
+            self.background = Entity(
+                parent=self, model='quad',
+                scale=(2,1,1), texture=bg_texture,
+                color=color.white, z=0.5
+            )
+        else:
+            self.background = Entity(
+                parent=self, model='quad',
+                scale=5, color=color.black, z=0.5
+            )
 
         # Tiêu đề
         self.title = Text(
@@ -62,13 +72,13 @@ class MainMenu(Entity):
         self.controls_text = Text(
             text='[WASD] Move  [SHIFT] Sprint  [LMB] Shoot  [R] Reload  [1/2/3] Weapon  [ESC] Pause',
             parent=self, scale=0.8, y=-0.32,
-            origin=(0, 0), color=color.gray
+            origin=(0, 0), color=color.red
         )
 
         # ==============================
         # BẢNG XẾP HẠNG (ẩn mặc định)
         # ==============================
-        self.leaderboard_panel = Entity(parent=self, enabled=False, z=-0.1)
+        self.leaderboard_panel = Entity(parent=self, enabled=False, z=-10)
 
         Entity(
             parent=self.leaderboard_panel, model='quad',
