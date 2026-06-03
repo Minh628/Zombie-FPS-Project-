@@ -17,6 +17,7 @@ class Level01:
     def __init__(self):
         self.spawn_points = []
         self.entities = []
+        self.ammo_boxes = []
 
         # --- Hệ thống Wave ---
         self.active_zombies = []
@@ -58,7 +59,7 @@ class Level01:
 
         mapOBJ = Entity(
             model='assets/models/map/obj/map.obj', collider='mesh',
-            position=Vec3(0, 0, 0), scale=0.6,
+            position=Vec3(0, 0, 0),
         )
         mapOBJ.visible = False      # Set AFTER creation so it applies once the model is loaded
         mapOBJ.color = color.rgba(0, 0, 0, 0)  # Fully transparent fallback (keeps collider active)
@@ -66,7 +67,6 @@ class Level01:
         mapGLTF = Entity(
             model='assets/models/map/gltf/map.gltf',
             rotation = Vec3(0, 180, 0),
-            scale=0.6,
             shader=lit_with_shadows_shader,
             metallic=0.2,
             roughness=0.8,
@@ -96,9 +96,9 @@ class Level01:
     def _setup_spawn_points(self):
         """Định nghĩa các điểm spawn zombie."""
         self.spawn_points = [
-            Vec3(37,0,-39),
-            Vec3(-60,0,35),
-            Vec3(-71,0,-34)
+            Vec3(46, 0, -32),
+            Vec3(-69, 0, -30),
+            Vec3(63, 0, -9)
         ]
 
     # ==============================================================
@@ -120,11 +120,13 @@ class Level01:
         self.is_wave_transitioning = False
         self.wave_transition_timer = 0
         self.is_running = True
+        self._spawn_ammo_boxes()
 
     def stop_waves(self):
         """Dừng hệ thống wave."""
         self.is_running = False
         self.clear_zombies()
+        self.clear_ammo_boxes()
 
     # ==============================================================
     # HỆ THỐNG WAVE (Level tự xử lý)
@@ -210,6 +212,7 @@ class Level01:
         self.is_wave_transitioning = False
         if self.on_wave_start:
             self.on_wave_start(self.wave)
+        self._spawn_ammo_boxes()
 
     def clear_zombies(self):
         """Xóa tất cả zombie."""
@@ -218,9 +221,35 @@ class Level01:
                 destroy(zombie)
         self.active_zombies.clear()
 
+    def clear_ammo_boxes(self):
+        """Xóa tất cả hộp đạn."""
+        for box in self.ammo_boxes:
+            if box:
+                destroy(box)
+        self.ammo_boxes.clear()
+
+    def _spawn_ammo_boxes(self):
+        """Spawn hộp đạn ở đầu mỗi wave."""
+        self.clear_ammo_boxes()
+        from entities.items.ammo_box import AmmoBox
+        
+        positions = [
+            Vec3(36, 1, -11),
+            Vec3(36, 1, 31),
+            Vec3(-18, 1, -21),
+            Vec3(-37, 1, 16)
+        ]
+        
+        for pos in positions:
+            box = AmmoBox(position=pos, player=self.player)
+            self.ammo_boxes.append(box)
+            if box not in self.entities:
+                self.entities.append(box)
+
     def cleanup(self):
         """Dọn dẹp toàn bộ (chỉ gọi khi thoát game thật sự)."""
         self.clear_zombies()
+        self.clear_ammo_boxes()
         for entity in self.entities:
             destroy(entity)
         self.entities.clear()

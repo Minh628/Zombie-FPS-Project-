@@ -1,8 +1,8 @@
-newmtl Height8Mtl
+newmtl Part117Mtl
 Material Color
-Ka 0.373615 0.368591 0.383775
-Kd 0.373615 0.368591 0.383775
-Ks 0.0234425 0.0231273 0.02408 
+Ka 0 0.0915184 0.00369724
+Kd 0 0.0915184 0.00369724
+Ks 0 0.00574233 0.000231984 
 
 d 1
 
@@ -30,75 +30,27 @@ map_d Part1_diff.png
 
 map_Bump Part1_nmap.png
 
+newmtl Part116Mtl
+Material Color
+Ka 0 0.0697271 0.00293232
+Kd 0 0.0697271 0.00293232
+Ks 0 0.00437503 0.000183989 
+
+d 1
+
+Ns 0
+
+map_Ka Part1_diff.png
+map_Kd Part1_diff.png
+map_d Part1_diff.png
+
+map_Bump Part1_nmap.png
+
 newmtl Part5Mtl
 Material Color
 Ka 0.00552174 0.139022 0
 Kd 0.00552174 0.139022 0
 Ks 0.000346462 0.00872298 0 
-
-d 1
-
-Ns 0
-
-map_Ka Part1_diff.png
-map_Kd Part1_diff.png
-map_d Part1_diff.png
-
-map_Bump Part1_nmap.png
-
-newmtl Part103Mtl
-Material Color
-Ka 0.0242229 0.12753 0.00258583
-Kd 0.0242229 0.12753 0.00258583
-Ks 0.00151987 0.00800187 0.000162248 
-
-d 1
-
-Ns 0
-
-map_Ka Part1_diff.png
-map_Kd Part1_diff.png
-map_d Part1_diff.png
-
-map_Bump Part1_nmap.png
-
-newmtl Height86Mtl
-Material Color
-Ka 0.804559 0.151058 0.0846415
-Kd 0.804559 0.151058 0.0846415
-Ks 0.0504821 0.00947815 0.00531084 
-
-d 1
-
-Ns 0
-
-map_Ka Part1_diff.png
-map_Kd Part1_diff.png
-map_d Part1_diff.png
-
-map_Bump Part1_nmap.png
-
-newmtl Height41Mtl
-Material Color
-Ka 0.687031 0.7593 0.789314
-Kd 0.687031 0.7593 0.789314
-Ks 0.0431078 0.0476423 0.0495256 
-
-d 1
-
-Ns 0
-
-map_Ka Part1_diff.png
-map_Kd Part1_diff.png
-map_d Part1_diff.png
-
-map_Bump Part1_nmap.png
-
-newmtl Part102Mtl
-Material Color
-Ka 0.119264 0.0545923 0.0169881
-Kd 0.119264 0.0545923 0.0169881
-Ks 0.00748323 0.0034254 0.00106592 
 
 d 1
 
@@ -126,22 +78,6 @@ map_d Part1_diff.png
 
 map_Bump Part1_nmap.png
 
-newmtl Reloadstation1Mtl
-Material Color
-Ka 0.940601 0.940601 0.940601
-Kd 0.940601 0.940601 0.940601
-Ks 0.0590181 0.0590181 0.0590181 
-
-d 1
-
-Ns 0
-
-map_Ka Part1_diff.png
-map_Kd Part1_diff.png
-map_d Part1_diff.png
-
-map_Bump Part1_nmap.png
-
 newmtl Part24Mtl
 Material Color
 Ka 0.0277553 0.119264 0.0169881
@@ -158,11 +94,75 @@ map_d Part1_diff.png
 
 map_Bump Part1_nmap.png
 
-newmtl Part116Mtl
+newmtl Part102Mtl
 Material Color
-Ka 0 0.0697271 0.00293232
-Kd 0 0.0697271 0.00293232
-Ks 0 0.00437503 0.000183989 
+Ka 0.119264 0.0545923 0.0169881
+Kd 0.119264 0.0545923 0.0169881
+Ks 0.00748323 0.0034254 0.00106592 
+
+d 1
+
+Ns 0
+
+map_Ka Part1_diff.png
+map_Kd Part1_diff.png
+map_d Part1_diff.png
+
+map_Bump Part1_nmap.png
+
+newmtl Height86Mtl
+Material Color
+Ka 0.804559 0.151058 0.0846415
+Kd 0.804559 0.151058 0.0846415
+Ks 0.0504821 0.00947815 0.00531084 
+
+d 1
+
+Ns 0
+
+map_Ka Part1_diff.png
+map_Kd Part1_diff.png
+map_d Part1_diff.png
+
+map_Bump Part1_nmap.png
+
+newmtl Part103Mtl
+Material Color
+Ka 0.0242229 0.12753 0.00258583
+Kd 0.0242229 0.12753 0.00258583
+Ks 0.00151987 0.00800187 0.000162248 
+
+d 1
+
+Ns 0
+
+map_Ka Part1_diff.png
+map_Kd Part1_diff.png
+map_d Part1_diff.png
+
+map_Bump Part1_nmap.png
+
+newmtl Part118Mtl
+Material Color
+Ka 0 0.111299 0.00455975
+Kd 0 0.111299 0.00455975
+Ks 0 0.00698349 0.000286102 
+
+d 1
+
+Ns 0
+
+map_Ka Part1_diff.png
+map_Kd Part1_diff.png
+map_d Part1_diff.png
+
+map_Bump Part1_nmap.png
+
+newmtl Height15Mtl
+Material Color
+Ka 0.363604 0.0638149 0.0356144
+Kd 0.363604 0.0638149 0.0356144
+Ks 0.0228144 0.00400407 0.00223463 
 
 d 1
 
@@ -190,43 +190,11 @@ map_d Part1_diff.png
 
 map_Bump Part1_nmap.png
 
-newmtl Part117Mtl
-Material Color
-Ka 0 0.0915184 0.00369724
-Kd 0 0.0915184 0.00369724
-Ks 0 0.00574233 0.000231984 
-
-d 1
-
-Ns 0
-
-map_Ka Part1_diff.png
-map_Kd Part1_diff.png
-map_d Part1_diff.png
-
-map_Bump Part1_nmap.png
-
 newmtl Part123Mtl
 Material Color
 Ka 0 0.0717615 0.00293232
 Kd 0 0.0717615 0.00293232
 Ks 0 0.00450268 0.000183989 
-
-d 1
-
-Ns 0
-
-map_Ka Part1_diff.png
-map_Kd Part1_diff.png
-map_d Part1_diff.png
-
-map_Bump Part1_nmap.png
-
-newmtl Part118Mtl
-Material Color
-Ka 0 0.111299 0.00455975
-Kd 0 0.111299 0.00455975
-Ks 0 0.00698349 0.000286102 
 
 d 1
 
@@ -267,22 +235,6 @@ Ns 0
 map_Ka Height172_diff.png
 map_Kd Height172_diff.png
 map_d Height172_diff.png
-
-newmtl Height122Mtl
-Material Color
-Ka 0.436813 0.436813 0.511398
-Kd 0.436813 0.436813 0.511398
-Ks 0.0274079 0.0274079 0.0320877 
-
-d 1
-
-Ns 0
-
-map_Ka Part1_diff.png
-map_Kd Part1_diff.png
-map_d Part1_diff.png
-
-map_Bump Part1_nmap.png
 
 newmtl Height132Mtl
 Material Color
@@ -328,19 +280,21 @@ map_Ka Height172_diff.png
 map_Kd Height172_diff.png
 map_d Height172_diff.png
 
-newmtl Height12Mtl
+newmtl Reloadstation1Mtl
 Material Color
-Ka 0 0 0
-Kd 0 0 0
-Ks 0 0 0 
+Ka 0.940601 0.940601 0.940601
+Kd 0.940601 0.940601 0.940601
+Ks 0.0590181 0.0590181 0.0590181 
 
 d 1
 
 Ns 0
 
-map_Ka Height172_diff.png
-map_Kd Height172_diff.png
-map_d Height172_diff.png
+map_Ka Part1_diff.png
+map_Kd Part1_diff.png
+map_d Part1_diff.png
+
+map_Bump Part1_nmap.png
 
 newmtl Height92Mtl
 Material Color
@@ -363,6 +317,20 @@ Kd 0 0 0
 Ks 0 0 0 
 
 d 0.901961
+
+Ns 0
+
+map_Ka Height172_diff.png
+map_Kd Height172_diff.png
+map_d Height172_diff.png
+
+newmtl Height12Mtl
+Material Color
+Ka 0 0 0
+Kd 0 0 0
+Ks 0 0 0 
+
+d 1
 
 Ns 0
 
@@ -418,11 +386,11 @@ map_d Part1_diff.png
 
 map_Bump Part1_nmap.png
 
-newmtl Height15Mtl
+newmtl Height8Mtl
 Material Color
-Ka 0.363604 0.0638149 0.0356144
-Kd 0.363604 0.0638149 0.0356144
-Ks 0.0228144 0.00400407 0.00223463 
+Ka 0.373615 0.368591 0.383775
+Kd 0.373615 0.368591 0.383775
+Ks 0.0234425 0.0231273 0.02408 
 
 d 1
 
@@ -466,6 +434,22 @@ map_d Part1_diff.png
 
 map_Bump Part1_nmap.png
 
+newmtl Height41Mtl
+Material Color
+Ka 0.687031 0.7593 0.789314
+Kd 0.687031 0.7593 0.789314
+Ks 0.0431078 0.0476423 0.0495256 
+
+d 1
+
+Ns 0
+
+map_Ka Part1_diff.png
+map_Kd Part1_diff.png
+map_d Part1_diff.png
+
+map_Bump Part1_nmap.png
+
 newmtl Height51Mtl
 Material Color
 Ka 0.302126 0.0328759 0.0143105
@@ -487,6 +471,22 @@ Material Color
 Ka 0.133209 0.144972 0.259027
 Kd 0.133209 0.144972 0.259027
 Ks 0.00835818 0.00909629 0.0162527 
+
+d 1
+
+Ns 0
+
+map_Ka Part1_diff.png
+map_Kd Part1_diff.png
+map_d Part1_diff.png
+
+map_Bump Part1_nmap.png
+
+newmtl Height122Mtl
+Material Color
+Ka 0.436813 0.436813 0.511398
+Kd 0.436813 0.436813 0.511398
+Ks 0.0274079 0.0274079 0.0320877 
 
 d 1
 

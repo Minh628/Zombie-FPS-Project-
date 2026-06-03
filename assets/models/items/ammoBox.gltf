@@ -1,0 +1,429 @@
+{
+  "accessors": [
+    {
+      "name": "INDEX",
+      "bufferView": 0,
+      "componentType": 5125,
+      "type": "SCALAR",
+      "count": 36
+    },
+    {
+      "name": "POSITION",
+      "bufferView": 1,
+      "componentType": 5126,
+      "type": "VEC3",
+      "count": 24
+    },
+    {
+      "name": "NORMAL",
+      "bufferView": 2,
+      "componentType": 5126,
+      "type": "VEC3",
+      "count": 24
+    },
+    {
+      "name": "TEXCOORD_0",
+      "bufferView": 3,
+      "componentType": 5126,
+      "type": "VEC2",
+      "count": 24
+    },
+    {
+      "name": "COLOR_0",
+      "bufferView": 4,
+      "componentType": 5121,
+      "type": "VEC4",
+      "normalized": true,
+      "count": 24
+    },
+    {
+      "name": "COLOR_0",
+      "bufferView": 5,
+      "componentType": 5121,
+      "type": "VEC4",
+      "normalized": true,
+      "count": 24
+    },
+    {
+      "name": "INDEX",
+      "bufferView": 6,
+      "componentType": 5125,
+      "type": "SCALAR",
+      "count": 288
+    },
+    {
+      "name": "POSITION",
+      "bufferView": 7,
+      "componentType": 5126,
+      "type": "VEC3",
+      "count": 114
+    },
+    {
+      "name": "NORMAL",
+      "bufferView": 8,
+      "componentType": 5126,
+      "type": "VEC3",
+      "count": 114
+    },
+    {
+      "name": "TEXCOORD_0",
+      "bufferView": 9,
+      "componentType": 5126,
+      "type": "VEC2",
+      "count": 114
+    },
+    {
+      "name": "COLOR_0",
+      "bufferView": 10,
+      "componentType": 5121,
+      "type": "VEC4",
+      "normalized": true,
+      "count": 114
+    }
+  ],
+  "asset": {
+    "generator": "Roblox Export",
+    "version": "2.0",
+    "min_version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "name": "INDEX",
+      "buffer": 0,
+      "byteLength": 144
+    },
+    {
+      "name": "POSITION",
+      "buffer": 1,
+      "byteLength": 288
+    },
+    {
+      "name": "NORMAL",
+      "buffer": 2,
+      "byteLength": 288
+    },
+    {
+      "name": "TEXCOORD_0",
+      "buffer": 3,
+      "byteLength": 192
+    },
+    {
+      "name": "COLOR_0",
+      "buffer": 4,
+      "byteLength": 96
+    },
+    {
+      "name": "COLOR_0",
+      "buffer": 5,
+      "byteLength": 96
+    },
+    {
+      "name": "INDEX",
+      "buffer": 6,
+      "byteLength": 1152
+    },
+    {
+      "name": "POSITION",
+      "buffer": 7,
+      "byteLength": 1368
+    },
+    {
+      "name": "NORMAL",
+      "buffer": 8,
+      "byteLength": 1368
+    },
+    {
+      "name": "TEXCOORD_0",
+      "buffer": 9,
+      "byteLength": 912
+    },
+    {
+      "name": "COLOR_0",
+      "buffer": 10,
+      "byteLength": 456
+    }
+  ],
+  "buffers": [
+    {
+      "name": "INDEX",
+      "uri": "data:application/octet-stream;base64,AAAAAAEAAAACAAAAAgAAAAMAAAAAAAAABAAAAAUAAAAGAAAABgAAAAcAAAAEAAAACAAAAAkAAAAKAAAACgAAAAsAAAAIAAAADAAAAA0AAAAOAAAADgAAAA8AAAAMAAAAEAAAABEAAAASAAAAEgAAABMAAAAQAAAAFAAAABUAAAAWAAAAFgAAABcAAAAUAAAA",
+      "byteLength": 144
+    },
+    {
+      "name": "POSITION",
+      "uri": "data:application/octet-stream;base64,AAAAPwAAAD8AAAA/AAAAPwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAvwAAAD8AAAC/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAC/AAAAvwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAPwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAvwAAAL8AAAC/AAAAvwAAAD8AAAC/AAAAPwAAAD8AAAC/AAAAPwAAAL8AAAC/AAAAvwAAAL8AAAC/",
+      "byteLength": 288
+    },
+    {
+      "name": "NORMAL",
+      "uri": "data:application/octet-stream;base64,AACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/",
+      "byteLength": 288
+    },
+    {
+      "name": "TEXCOORD_0",
+      "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAIA/AAAAAAAAgD8AAIA/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAPwAAgD8AAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAIA/AACAPwAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAgD8AAIA/AAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAACAPwAAgD8AAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAIA/AACAPwAAAAAAAIA/",
+      "byteLength": 192
+    },
+    {
+      "name": "COLOR_0",
+      "uri": "data:application/octet-stream;base64,r5SD/6+Ug/+vlIP/r5SD/6+Ug/+vlIP/r5SD/6+Ug/+vlIP/r5SD/6+Ug/+vlIP/r5SD/6+Ug/+vlIP/r5SD/6+Ug/+vlIP/r5SD/6+Ug/+vlIP/r5SD/6+Ug/+vlIP/",
+      "byteLength": 96
+    },
+    {
+      "name": "COLOR_0",
+      "uri": "data:application/octet-stream;base64,Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/",
+      "byteLength": 96
+    },
+    {
+      "name": "INDEX",
+      "uri": "data:application/octet-stream;base64,AAAAAAcAAAAIAAAACAAAAAEAAAAAAAAAAQAAAAgAAAAJAAAACQAAAAIAAAABAAAAAgAAAAkAAAAKAAAACgAAAAMAAAACAAAAAwAAAAoAAAALAAAACwAAAAQAAAADAAAABAAAAAsAAAAMAAAADAAAAAUAAAAEAAAABQAAAAwAAAANAAAADQAAAAYAAAAFAAAADgAAABUAAAAWAAAAFgAAAA8AAAAOAAAADwAAABYAAAAXAAAAFwAAABAAAAAPAAAAEAAAABcAAAAYAAAAGAAAABEAAAAQAAAAEQAAABgAAAAZAAAAGQAAABIAAAARAAAAEgAAABkAAAAaAAAAGgAAABMAAAASAAAAEwAAABoAAAAbAAAAGwAAABQAAAATAAAAHAAAACMAAAAkAAAAJAAAAB0AAAAcAAAAHQAAACQAAAAlAAAAJQAAAB4AAAAdAAAAHgAAACUAAAAmAAAAJgAAAB8AAAAeAAAAHwAAACYAAAAnAAAAJwAAACAAAAAfAAAAIAAAACcAAAAoAAAAKAAAACEAAAAgAAAAIQAAACgAAAApAAAAKQAAACIAAAAhAAAAKgAAADEAAAAyAAAAMgAAACsAAAAqAAAAKwAAADIAAAAzAAAAMwAAACwAAAArAAAALAAAADMAAAA0AAAANAAAAC0AAAAsAAAALQAAADQAAAA1AAAANQAAAC4AAAAtAAAALgAAADUAAAA2AAAANgAAAC8AAAAuAAAALwAAADYAAAA3AAAANwAAADAAAAAvAAAAOAAAADkAAAA6AAAAOAAAADoAAAA7AAAAOAAAADsAAAA8AAAAOAAAADwAAAA9AAAAOAAAAD0AAAA+AAAAOAAAAD4AAAA/AAAAOAAAAEAAAABBAAAAOAAAAEEAAABCAAAAOAAAAEIAAABDAAAAOAAAAEMAAABEAAAAOAAAAEQAAABFAAAAOAAAAEUAAABGAAAAOAAAAEcAAABIAAAAOAAAAEgAAABJAAAAOAAAAEkAAABKAAAAOAAAAEoAAABLAAAAOAAAAEsAAABMAAAAOAAAAEwAAABNAAAAOAAAAE4AAABPAAAAOAAAAE8AAABQAAAAOAAAAFAAAABRAAAAOAAAAFEAAABSAAAAOAAAAFIAAABTAAAAOAAAAFMAAABUAAAAVQAAAFcAAABWAAAAVQAAAFgAAABXAAAAVQAAAFkAAABYAAAAVQAAAFoAAABZAAAAVQAAAFsAAABaAAAAVQAAAFwAAABbAAAAVQAAAF4AAABdAAAAVQAAAF8AAABeAAAAVQAAAGAAAABfAAAAVQAAAGEAAABgAAAAVQAAAGIAAABhAAAAVQAAAGMAAABiAAAAVQAAAGUAAABkAAAAVQAAAGYAAABlAAAAVQAAAGcAAABmAAAAVQAAAGgAAABnAAAAVQAAAGkAAABoAAAAVQAAAGoAAABpAAAAVQAAAGwAAABrAAAAVQAAAG0AAABsAAAAVQAAAG4AAABtAAAAVQAAAG8AAABuAAAAVQAAAHAAAABvAAAAVQAAAHEAAABwAAAA",
+      "byteLength": 1152
+    },
+    {
+      "name": "POSITION",
+      "uri": "data:application/octet-stream;base64,AAAAv/MEtb7zBLU+AAAAv9UAjr5AAdU+AAAAv5voIb7p3PI+AAAAvwAAAAAAAAA/AAAAv53oIT7p3PI+AAAAv9UAjj5AAdU+AAAAv/MEtT7zBLU+AAAAP/MEtb7zBLU+AAAAP9UAjr5AAdU+AAAAP5voIb7p3PI+AAAAPwAAAAAAAAA/AAAAP53oIT7p3PI+AAAAP9UAjj5AAdU+AAAAP/MEtT7zBLU+AAAAv/MEtT7zBLU+AAAAv0AB1T7VAI4+AAAAv+nc8j6b6CE+AAAAvwAAAD8AAAAAAAAAv+nc8j6d6CG+AAAAv0AB1T7VAI6+AAAAv/MEtT7zBLW+AAAAP/MEtT7zBLU+AAAAP0AB1T7VAI4+AAAAP+nc8j6b6CE+AAAAPwAAAD8AAAAAAAAAP+nc8j6d6CG+AAAAP0AB1T7VAI6+AAAAP/MEtT7zBLW+AAAAv/MEtT7zBLW+AAAAv9UAjj5AAdW+AAAAv5voIT7p3PK+AAAAvwAAAIAAAAC/AAAAv53oIb7p3PK+AAAAv9UAjr5AAdW+AAAAv/MEtb7zBLW+AAAAP/MEtT7zBLW+AAAAP9UAjj5AAdW+AAAAP5voIT7p3PK+AAAAPwAAAAAAAAC/AAAAP53oIb7p3PK+AAAAP9UAjr5AAdW+AAAAP/MEtb7zBLW+AAAAv/MEtb7zBLW+AAAAv0AB1b7VAI6+AAAAv+nc8r6b6CG+AAAAvwAAAL8AAAAAAAAAv+nc8r6d6CE+AAAAv0AB1b7VAI4+AAAAv/MEtb7zBLU+AAAAP/MEtb7zBLW+AAAAP0AB1b7VAI6+AAAAP+nc8r6b6CG+AAAAPwAAAL8AAAAAAAAAP+nc8r6d6CE+AAAAP0AB1b7VAI4+AAAAP/MEtb7zBLU+AAAAvwAAAIAAAACAAAAAv/MEtb7zBLU+AAAAv9UAjr5AAdU+AAAAv5voIb7p3PI+AAAAvwAAAAAAAAA/AAAAv53oIT7p3PI+AAAAv9UAjj5AAdU+AAAAv/MEtT7zBLU+AAAAv/MEtT7zBLU+AAAAv0AB1T7VAI4+AAAAv+nc8j6b6CE+AAAAvwAAAD8AAAAAAAAAv+nc8j6d6CG+AAAAv0AB1T7VAI6+AAAAv/MEtT7zBLW+AAAAv/MEtT7zBLW+AAAAv9UAjj5AAdW+AAAAv5voIT7p3PK+AAAAvwAAAIAAAAC/AAAAv53oIb7p3PK+AAAAv9UAjr5AAdW+AAAAv/MEtb7zBLW+AAAAv/MEtb7zBLW+AAAAv0AB1b7VAI6+AAAAv+nc8r6b6CG+AAAAvwAAAL8AAAAAAAAAv+nc8r6d6CE+AAAAv0AB1b7VAI4+AAAAv/MEtb7zBLU+AAAAPwAAAAAAAAAAAAAAP/MEtb7zBLU+AAAAP9UAjr5AAdU+AAAAP5voIb7p3PI+AAAAPwAAAAAAAAA/AAAAP53oIT7p3PI+AAAAP9UAjj5AAdU+AAAAP/MEtT7zBLU+AAAAP/MEtT7zBLU+AAAAP0AB1T7VAI4+AAAAP+nc8j6b6CE+AAAAPwAAAD8AAAAAAAAAP+nc8j6d6CG+AAAAP0AB1T7VAI6+AAAAP/MEtT7zBLW+AAAAP/MEtT7zBLW+AAAAP9UAjj5AAdW+AAAAP5voIT7p3PK+AAAAPwAAAAAAAAC/AAAAP53oIb7p3PK+AAAAP9UAjr5AAdW+AAAAP/MEtb7zBLW+AAAAP/MEtb7zBLW+AAAAP0AB1b7VAI6+AAAAP+nc8r6b6CG+AAAAPwAAAL8AAAAAAAAAP+nc8r6d6CE+AAAAP0AB1b7VAI4+AAAAP/MEtb7zBLU+",
+      "byteLength": 1368
+    },
+    {
+      "name": "NORMAL",
+      "uri": "data:application/octet-stream;base64,AAAAANZqNb/WajU/AAAAADQaDb9Wq1U/AAAAAIZCob7I43E/AAAAAAAAAAAAAIA/AAAAAIRCoT7I43E/AAAAADQaDT9Wq1U/AAAAANZqNT/WajU/AAAAANZqNb/WajU/AAAAADQaDb9Wq1U/AAAAAIZCob7I43E/AAAAAAAAAAAAAIA/AAAAAIRCoT7I43E/AAAAADQaDT9Wq1U/AAAAANZqNT/WajU/AAAAANZqNT/WajU/AAAAAFarVT80Gg0/AAAAAMjjcT+EQqE+AAAAAAAAgD8AAAAAAAAAAMjjcT+GQqG+AAAAAFarVT80Gg2/AAAAANZqNT/WajW/AAAAANZqNT/WajU/AAAAAFarVT80Gg0/AAAAAMjjcT+EQqE+AAAAAAAAgD8AAAAAAAAAAMjjcT+GQqG+AAAAAFarVT80Gg2/AAAAANZqNT/WajW/AAAAANZqNT/WajW/AAAAADQaDT9Xq1W/AAAAAIRCoT7I43G/AAAAAAAAAAAAAIC/AAAAAIZCob7I43G/AAAAADQaDb9Xq1W/AAAAANZqNb/WajW/AAAAANZqNT/WajW/AAAAADQaDT9Xq1W/AAAAAIRCoT7I43G/AAAAAAAAAAAAAIC/AAAAAIZCob7I43G/AAAAADQaDb9Xq1W/AAAAANZqNb/WajW/AAAAANZqNb/WajW/AAAAAFerVb80Gg2/AAAAAMjjcb+GQqG+AAAAAAAAgL8AAAAAAAAAAMjjcb+EQqE+AAAAAFerVb80Gg0/AAAAANZqNb/WajU/AAAAANZqNb/WajW/AAAAAFerVb80Gg2/AAAAAMjjcb+GQqG+AAAAAAAAgL8AAAAAAAAAAMjjcb+EQqE+AAAAAFerVb80Gg0/AAAAANZqNb/WajU/AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAA",
+      "byteLength": 1368
+    },
+    {
+      "name": "TEXCOORD_0",
+      "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAq6oqPgAAAACrqqo+AAAAAAAAAD8AAAAAq6oqPwAAAABVVVU/AAAAAAAAgD8AAIA/AAAAAAAAgD+rqio+AACAP6uqqj4AAIA/AAAAPwAAgD+rqio/AACAP1VVVT8AAIA/AACAPwAAAAAAAAAAAAAAAKuqKj4AAAAAq6qqPgAAAAAAAAA/AAAAAKuqKj8AAAAAVVVVPwAAAAAAAIA/AACAPwAAAAAAAIA/q6oqPgAAgD+rqqo+AACAPwAAAD8AAIA/q6oqPwAAgD9VVVU/AACAPwAAgD8AAAAAAAAAAAAAAACrqio+AAAAAKuqqj4AAAAAAAAAPwAAAACrqio/AAAAAFVVVT8AAAAAAACAPwAAgD8AAAAAAACAP6uqKj4AAIA/q6qqPgAAgD8AAAA/AACAP6uqKj8AAIA/VVVVPwAAgD8AAIA/AAAAAAAAAAAAAAAAq6oqPgAAAACrqqo+AAAAAAAAAD8AAAAAq6oqPwAAAABVVVU/AAAAAAAAgD8AAIA/AAAAAAAAgD+rqio+AACAP6uqqj4AAIA/AAAAPwAAgD+rqio/AACAP1VVVT8AAIA/AACAPwAAAD8AAAA/eoJaPxr2FT6ggGo/Vv5jPnRueT+yC68+AACAPwAAAD90bnk/J3ooP6CAaj9qAEc/eoJaP3qCWj96glo/eoJaP2oARz+ggGo/J3ooP3RueT8AAAA/AACAP7ILrz50bnk/Vv5jPqCAaj8a9hU+eoJaPxr2FT56glo/APurPWoARz9wMdI8J3ooPwAAAAAAAAA/cDHSPLILrz4A+6s9Vv5jPhr2FT4a9hU+GvYVPhr2FT5W/mM+APurPbILrz5wMdI8AAAAPwAAAAAneig/cDHSPGoARz8A+6s9eoJaPxr2FT4AAAA/AAAAP3qCWj8a9hU+oIBqP1b+Yz50bnk/sguvPgAAgD8AAAA/dG55Pyd6KD+ggGo/agBHP3qCWj96glo/eoJaP3qCWj9qAEc/oIBqPyd6KD90bnk/AAAAPwAAgD+yC68+dG55P1b+Yz6ggGo/GvYVPnqCWj8a9hU+eoJaPwD7qz1qAEc/cDHSPCd6KD8AAAAAAAAAP3Ax0jyyC68+APurPVb+Yz4a9hU+GvYVPhr2FT4a9hU+Vv5jPgD7qz2yC68+cDHSPAAAAD8AAAAAJ3ooP3Ax0jxqAEc/APurPXqCWj8a9hU+",
+      "byteLength": 912
+    },
+    {
+      "name": "COLOR_0",
+      "uri": "data:application/octet-stream;base64,Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/Y19i/2NfYv9jX2L/",
+      "byteLength": 456
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Part",
+      "primitives": [
+        {
+          "indices": 0,
+          "material": 0,
+          "attributes": {
+            "POSITION": 1,
+            "NORMAL": 2,
+            "TEXCOORD_0": 3,
+            "COLOR_0": 4
+          }
+        }
+      ]
+    },
+    {
+      "name": "Part",
+      "primitives": [
+        {
+          "indices": 0,
+          "material": 1,
+          "attributes": {
+            "POSITION": 1,
+            "NORMAL": 2,
+            "TEXCOORD_0": 3,
+            "COLOR_0": 5
+          }
+        }
+      ]
+    },
+    {
+      "name": "Part",
+      "primitives": [
+        {
+          "indices": 6,
+          "material": 1,
+          "attributes": {
+            "POSITION": 7,
+            "NORMAL": 8,
+            "TEXCOORD_0": 9,
+            "COLOR_0": 10
+          }
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [0.686274529, 0.580392182, 0.513725519, 1]
+      }
+    },
+    {
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [0.388235301, 0.372549027, 0.384313732, 1]
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "children": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 ],
+      "name": "wood ammo  crate",
+      "rotation": [1.41555105e-08, -1, -7.5434885e-09, -7.54979013e-08],
+      "extras": {"RobloxInstanceType":"Model","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100003114"}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [-2.86102295e-06, -0.0573446751, -1.55157185],
+      "rotation": [1.50869184e-08, -2.6822056e-07, -2.83111277e-08, 1],
+      "scale": [6.5, 1.69700003, 0.100000001],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001649","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [-3.11771393, -0.094039917, -1.27271652],
+      "rotation": [-0.707106829, 0.707106709, -2.31684723e-07, 2.53003492e-07],
+      "scale": [1.98196411, 0.201461792, 0.5],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001648","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [3.08330584, -0.0940400362, -1.27286911],
+      "rotation": [-0.707106829, 0.707106709, -2.31684723e-07, 2.53003492e-07],
+      "scale": [1.98196411, 0.201461792, 0.5],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001647","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [-0.0179562569, -0.100737929, -0.0220417976],
+      "rotation": [1.50869184e-08, -2.6822056e-07, -2.83111277e-08, 1],
+      "scale": [6, 2, 3],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001646","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [-2.30194092, 1.00001299, -0.0281758308],
+      "rotation": [9.62027435e-09, -0.70710659, 3.04175103e-08, 0.707106948],
+      "scale": [2.98687744, 0.201461792, 0.5],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001645","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [2.21916485, 1.00000536, -0.0281758308],
+      "rotation": [9.62027435e-09, -0.70710659, 3.04175103e-08, 0.707106948],
+      "scale": [2.98687744, 0.201461792, 0.5],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001644","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [3.08333683, -0.0906989574, 1.22771692],
+      "rotation": [-0.707106829, 0.707106709, -2.31684723e-07, 2.53003492e-07],
+      "scale": [1.98196411, 0.201461792, 0.5],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001643","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [-3.11775208, -0.0906989574, 1.22780848],
+      "rotation": [-0.707106829, 0.707106709, -2.31684723e-07, 2.53003492e-07],
+      "scale": [1.98196411, 0.201461792, 0.5],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001642","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 0,
+      "name": "Part",
+      "translation": [2.38418579e-06, -0.0573314428, 1.50649595],
+      "rotation": [1.50869184e-08, -2.6822056e-07, -2.83111277e-08, 1],
+      "scale": [6.5, 1.69700003, 0.0590000004],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001641","Shape":"Block","Material":"woodplanks","Color":"(175, 148, 131)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 1,
+      "name": "Part",
+      "translation": [1.84387875, 0.927665591, 1.28127527],
+      "rotation": [9.62027435e-09, -0.70710659, 3.04175103e-08, 0.707106948],
+      "scale": [0.621688843, 0.0567626953, 0.252563477],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d4100001640","Shape":"Block","Material":"metal","Color":"(99, 95, 98)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 1,
+      "name": "Part",
+      "translation": [1.84493017, 0.613885641, 1.56367064],
+      "rotation": [-0.499999851, -0.499999881, 0.500000119, 0.500000119],
+      "scale": [0.64793396, 0.0567626953, 0.252563477],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d410000163f","Shape":"Block","Material":"metal","Color":"(99, 95, 98)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 1,
+      "name": "Part",
+      "translation": [1.84495115, 0.861378074, 1.50699949],
+      "rotation": [-0.499999851, -0.499999881, 0.500000119, 0.500000119],
+      "scale": [0.152938843, 0.0567626953, 0.252563477],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d410000163e","Shape":"Block","Material":"metal","Color":"(99, 95, 98)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 1,
+      "name": "Part",
+      "translation": [-1.92622662, 0.927661777, 1.28127527],
+      "rotation": [9.62027435e-09, -0.70710659, 3.04175103e-08, 0.707106948],
+      "scale": [0.621688843, 0.0567626953, 0.252563477],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d410000163d","Shape":"Block","Material":"metal","Color":"(99, 95, 98)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 2,
+      "name": "Part",
+      "translation": [1.84403753, 0.945396781, 1.57540464],
+      "rotation": [1.50869184e-08, -2.6822056e-07, -2.83111277e-08, 1],
+      "scale": [0.269218743, 0.0523376465, 0.0523376465],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d410000163c","Shape":"Cylinder","Material":"diamondplate","Color":"(99, 95, 98)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 1,
+      "name": "Part",
+      "translation": [-1.92516041, 0.6138798, 1.56365538],
+      "rotation": [-0.499999851, -0.499999881, 0.500000119, 0.500000119],
+      "scale": [0.64793396, 0.0567626953, 0.252563477],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d410000163b","Shape":"Block","Material":"metal","Color":"(99, 95, 98)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 1,
+      "name": "Part",
+      "translation": [-1.92514706, 0.861373425, 1.50701475],
+      "rotation": [-0.499999851, -0.499999881, 0.500000119, 0.500000119],
+      "scale": [0.152938843, 0.0567626953, 0.252563477],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d410000163a","Shape":"Block","Material":"metal","Color":"(99, 95, 98)","Transparency":0,"Anchored":true}
+    },
+    {
+      "children": [ ],
+      "mesh": 2,
+      "name": "Part",
+      "translation": [-1.92340374, 0.945404887, 1.57540464],
+      "rotation": [1.50869184e-08, -2.6822056e-07, -2.83111277e-08, 1],
+      "scale": [0.269218743, 0.0523376465, 0.0523376465],
+      "extras": {"RobloxInstanceType":"Part","RobloxUniqueId":"18788a64-8107-3915-0a31-7d410000162f","Shape":"Cylinder","Material":"diamondplate","Color":"(99, 95, 98)","Transparency":0,"Anchored":true}
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [ 0 ]
+    }
+  ]
+}
+

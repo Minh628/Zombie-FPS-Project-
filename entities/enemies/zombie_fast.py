@@ -21,4 +21,3 @@ class ZombieFast(ZombieBase):
 
         # Ngoại hình khác biệt
         self.color = color.lime
-        self.scale = Vec3(0.8, 1.8, 0.8)  # Nhỏ hơn một chút

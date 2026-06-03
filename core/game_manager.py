@@ -111,7 +111,7 @@ class GameManager(Entity):
         self.play_start_time = _time.time()
 
         # Player tự lo: hồi sinh + reset vũ khí
-        self.player.respawn(Vec3(50, 1, 0))
+        self.player.respawn()
         self.player.enabled = True
         self.player.reset_weapons()
 

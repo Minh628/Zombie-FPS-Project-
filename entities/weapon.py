@@ -35,6 +35,7 @@ class WeaponBase(Entity):
         self.max_ammo = max_ammo
         self.current_ammo = max_ammo
         self.total_ammo = total_ammo
+        self.max_total_ammo = total_ammo
         self.attack_range = attack_range
         self.is_melee = is_melee
         self.can_shoot = True
@@ -125,6 +126,17 @@ class WeaponBase(Entity):
                 self.on_ammo_changed(-1, -1)
             else:
                 self.on_ammo_changed(self.current_ammo, self.total_ammo)
+
+    def refill_ammo(self):
+        """Nạp đầy đạn (cả băng đạn và đạn dự trữ)."""
+        if self.is_melee:
+            return
+        self.current_ammo = self.max_ammo
+        self.total_ammo = self.max_total_ammo
+        self.is_reloading = False
+        self.can_shoot = True
+        print(f'[{self.weapon_name}] Ammo fully refilled!')
+        self._notify_ammo()
 
     def reset_ammo(self):
         self.current_ammo = self.max_ammo

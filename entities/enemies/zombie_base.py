@@ -18,7 +18,6 @@ class ZombieBase(Entity):
     def __init__(self, position=Vec3(0, 0, 0), player=None, **kwargs):
         super().__init__(
             model=None,
-            scale=(1,1.2,1),
             position=position,
             collider=None,
             **kwargs
