@@ -122,31 +122,59 @@ class ZombieBase(Entity):
 
         move_amount = direction * self.speed * time.dt
 
-        # === COLLISION CHECK: kiểm tra trước khi di chuyển ===
-        # Raycast phía trước để tránh xuyên tường
-        forward_origin = self.position + Vec3(0, max(0.2, self._half_height()), 0)
-        hit = raycast(
-            origin=forward_origin,
-            direction=direction,
-            distance=self.speed * time.dt + 0.8,
-            ignore=[self, self.player],
-        )
+        # === COLLISION CHECK VÀ PATHFINDING CẢI TIẾN ===
+        step_height = 0.6  # Chiều cao bậc thang tối đa
+        ray_dist = self.speed * time.dt + 0.8
 
-        if not hit.hit or (hasattr(hit.entity, 'is_alive')):
-            # Không có vật cản hoặc đó là zombie khác → di chuyển
+        low_origin = self.position + Vec3(0, 0.2, 0) # Tia gót chân
+        high_origin = self.position + Vec3(0, 1.2, 0) # Tia ngực
+
+        low_hit = raycast(origin=low_origin, direction=direction, distance=ray_dist, ignore=[self, self.player])
+        high_hit = raycast(origin=high_origin, direction=direction, distance=ray_dist, ignore=[self, self.player])
+
+        # Kiểm tra chướng ngại vật (bỏ qua entity sống như zombie khác)
+        low_blocked = low_hit.hit and not hasattr(low_hit.entity, 'is_alive')
+        high_blocked = high_hit.hit and not hasattr(high_hit.entity, 'is_alive')
+
+        moved = False
+
+        if not low_blocked and not high_blocked:
+            # Đường trống hoàn toàn -> Di chuyển bình thường
             self.position += move_amount
+            moved = True
+        elif low_blocked and not high_blocked:
+            # 1. Khả năng leo bậc thang (Step Climbing)
+            # Tia dưới chạm, tia trên không chạm -> Bục thấp / Gờ đất
+            self.y += step_height
+            self.position += move_amount
+            moved = True
         else:
-            # Có tường/vật cản → thử trượt sang bên
-            # Thử di chuyển theo trục X
-            side_dir = Vec3(direction.z, 0, -direction.x).normalized()
-            side_hit = raycast(
-                origin=forward_origin,
-                direction=side_dir,
-                distance=self.speed * time.dt + 0.8,
-                ignore=[self, self.player],
-            )
-            if not side_hit.hit:
-                self.position += side_dir * self.speed * time.dt * 0.5
+            # 2. Né tường thông minh (Obstacle Avoidance / Steering)
+            # Tia trên bị chặn -> Gặp tường cao
+            import math
+            angles = [45, -45, 90, -90]
+            
+            for angle in angles:
+                rad = math.radians(angle)
+                # Xoay vector direction đi 1 góc rad quanh trục Y
+                new_dx = direction.x * math.cos(rad) - direction.z * math.sin(rad)
+                new_dz = direction.x * math.sin(rad) + direction.z * math.cos(rad)
+                test_dir = Vec3(new_dx, 0, new_dz).normalized()
+                
+                test_high = raycast(origin=high_origin, direction=test_dir, distance=ray_dist, ignore=[self, self.player])
+                test_low = raycast(origin=low_origin, direction=test_dir, distance=ray_dist, ignore=[self, self.player])
+                
+                t_high_blocked = test_high.hit and not hasattr(test_high.entity, 'is_alive')
+                t_low_blocked = test_low.hit and not hasattr(test_low.entity, 'is_alive')
+                
+                if not t_high_blocked:
+                    # Nếu hướng mới có phía trên trống
+                    if t_low_blocked:
+                        # Có bậc thấp cản hướng này -> Leo lên
+                        self.y += step_height
+                    self.position += test_dir * self.speed * time.dt
+                    moved = True
+                    break
 
         self._apply_gravity_and_ground()
 
