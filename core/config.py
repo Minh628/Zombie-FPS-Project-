@@ -95,6 +95,6 @@ ZOMBIE_CONFIG = {
         'health': ZOMBIE_FAST_HEALTH,
         'speed': ZOMBIE_FAST_SPEED,
         'damage': ZOMBIE_FAST_DAMAGE,
-        'anims': {'walk': 'Run', 'attack': 'Hit'}
+        'anims': {'walk': 'Run', 'attack': 'attack'}
     }
 }
