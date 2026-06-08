@@ -191,7 +191,7 @@ class Level01:
         )
 
         # Xác định loại zombie cần gọi
-        want_fast = (self.wave >= 2 and random.random() < 0.3)
+        want_fast = (self.wave >= 1 and random.random() < 0.3)
 
         # Lấy quái từ pool RAM
         zombie = self._get_zombie_from_pool(is_fast=want_fast)

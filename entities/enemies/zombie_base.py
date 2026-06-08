@@ -142,6 +142,10 @@ class ZombieBase(Entity):
         self._moan_timer = 0.0
         self.can_attack = True
         self.vertical_velocity = 0.0
+        if hasattr(self, 'health_bar_bg') and self.health_bar_bg:
+            self.health_bar_bg.enabled = True
+            health_ratio = self.health / self.max_health
+            self.health_bar.scale_x = 0.95 * health_ratio
         self._current_anim = None  # Reset để cho phép play lại anim walk
         if self._walk_anim:
             self._play_anim(self._walk_anim)
@@ -292,17 +296,38 @@ class ZombieBase(Entity):
         self.y += self.vertical_velocity * time.dt
 
     def attack(self):
-        """Tấn công player khi đủ gần."""
+        """Tấn công player khi đủ gần (Đã sửa: Chờ animation cào xong mới tính sát thương)."""
         if not self.can_attack or not self.player:
             return
 
         self.can_attack = False
-        self._play_moan()
         self._play_anim(self._attack_anim or "Attack")
-        self.player.take_damage(self.damage)
-        print(f'[Zombie] Attacked player for {self.damage} damage!')
-
+        
+        # --- CẢI TIẾN: Trì hoãn việc gây sát thương ---
+        # Giả định animation cào mất 0.4 giây để vung tay chạm mục tiêu.
+        # Bạn có thể điều chỉnh con số 0.4 này cho khớp với model 3D của bạn.
+        hit_delay = 0.4
+        
+        invoke(self._apply_damage_delayed, delay=hit_delay)
+        
+        # Cooldown tổng của đòn đánh tính từ lúc bắt đầu giơ tay
         invoke(self._reset_attack, delay=self.attack_cooldown)
+
+    def _apply_damage_delayed(self):
+        """Gây sát thương sau khi animation đã thực hiện xong cú vung tay."""
+        # Kiểm tra điều kiện: Zombie phải còn sống và player vẫn ở trong tầm đánh
+        if not self.is_alive or not self.player:
+            return
+            
+        # Tính lại khoảng cách tại ĐÚNG thời điểm ra đòn (tránh việc player đã chạy mất vẫn dính damage)
+        dist = distance_between(self, self.player)
+        
+        # Cho phép nới rộng tầm đánh ra một chút (ví dụ + 0.5) vì player có thể đang di chuyển lùi
+        if dist <= (self.attack_range + 0.5):
+            self.player.take_damage(self.damage)
+            print(f'[Zombie] Đã cào trúng player, gây {self.damage} damage!')
+        else:
+            print('[Zombie] Cào hụt vì player đã né kịp!')
 
     def _reset_attack(self):
         """Reset cooldown tấn công."""
@@ -341,9 +366,7 @@ class ZombieBase(Entity):
 
         # Ẩn health bar khi chết
         if hasattr(self, 'health_bar_bg') and self.health_bar_bg:
-            destroy(self.health_bar_bg)
-            self.health_bar_bg = None
-            self.health_bar = None
+            self.health_bar_bg.enabled = False
         
         invoke(self.death_sound.play, delay=0.18)
 
