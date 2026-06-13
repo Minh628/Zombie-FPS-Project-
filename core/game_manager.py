@@ -11,6 +11,7 @@ from entities.player import Player
 from ui.ui_manager import UIManager
 from levels.level_01 import Level01
 from database.db_manager import DBManager
+from core.pathfinding import NavGraph
 
 
 class GameState(Enum):
@@ -117,6 +118,9 @@ class GameManager(Entity):
 
         # Level tự lo: dọn quái + reset wave (KHÔNG load lại map)
         self.level.reset_level(self.player)
+
+        # Clear NavGraph mỗi khi chơi lại
+        NavGraph.get_instance().clear()
 
         # UI tự lo: chuyển sang chế độ chơi
         self.ui.switch_to_play_mode()
@@ -232,6 +236,8 @@ class GameManager(Entity):
         if self.state == GameState.PLAYING:
             self.play_time += time.dt
             self.level.update_waves()
+            # Rải bánh mì (NavGraph) dựa trên vị trí player
+            NavGraph.get_instance().update_player_pos(self.player.position)
 
     def input(self, key):
         """ESC: pause/resume. Vũ khí: Player tự lo."""

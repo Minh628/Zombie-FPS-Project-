@@ -6,6 +6,7 @@ from core.config import (
     SOUNDS_DIR, MODELS_DIR
 )
 from core.utils import distance_between, direction_to
+from core.pathfinding import NavGraph
 
 
 class ZombieBase(Entity):
@@ -51,10 +52,10 @@ class ZombieBase(Entity):
         self.moan_interval = 4.5
         self._moan_timer = 0.0
 
-        # --- Throttling Variables ---
-        self._raycast_timer = 0.0
-        self._raycast_interval = 0.15 # 150ms mỗi lần quét
-        self._cached_direction = Vec3(0, 0, 0)
+        # --- Pathfinding (A* Cache) ---
+        self.current_path = []
+        self.path_recalc_timer = 0.0
+        self._los_timer = 0.0
         self._was_visible = True
 
         # Callbacks
@@ -221,12 +222,43 @@ class ZombieBase(Entity):
                          self._play_anim(self._walk_anim)
 
     def _handle_movement(self, dist, stopping_distance):
-        """Tính toán đường đi, leo dốc và trượt dọc theo vật cản (Wall Sliding)"""
+        """Tính toán đường đi, A* Breadcrumb và trượt tường"""
         if dist <= stopping_distance:
+            self.current_path = [] # Tới nơi thì xóa đường
             return
 
-        # Tính toán hướng tới player
-        target_dir = direction_to(self, self.player)
+        self.path_recalc_timer += time.dt
+        target_pos = self.player.position
+
+        # NẾU ĐANG CÓ ĐƯỜNG A* -> Ưu tiên đi theo các hạt bánh mì
+        if self.current_path:
+            # KIỂM TRA THỊ GIÁC PHẢN XẢ (LOS OVERRIDE)
+            self._los_timer += time.dt
+            if self._los_timer > 0.5:
+                self._los_timer = 0.0
+                player_dir = self.player.position - self.position
+                player_dist = player_dir.length()
+                if player_dist > 0:
+                    player_dir = player_dir.normalized()
+                    hit = raycast(origin=self.position + Vec3(0, 1.0, 0), direction=player_dir, distance=player_dist, ignore=[self, self.player])
+                    # Nếu quét tia thẳng tới Player mà không chạm bức tường nào (hoặc chạm quái)
+                    if not hit.hit or hasattr(hit.entity, 'is_alive'):
+                        self.current_path = [] # Vứt bỏ đường bánh mì, đuổi thẳng!
+                        target_pos = self.player.position
+
+            # NẾU VẪN CÒN ĐƯỜNG SAU KHI QUÉT LOS
+            if self.current_path:
+                next_wp = self.current_path[0]
+                # Nếu đã đến đủ gần điểm waypoint (0.8m), xóa điểm đó đi
+                if distance(Vec3(self.position.x, 0, self.position.z), Vec3(next_wp.x, 0, next_wp.z)) < 0.8:
+                    self.current_path.pop(0)
+                    if self.current_path:
+                        target_pos = self.current_path[0]
+                else:
+                    target_pos = next_wp
+
+        # Tính toán hướng tới mục tiêu (Player hoặc Waypoint)
+        target_dir = target_pos - self.position
         target_dir.y = 0
         if target_dir.length() > 0:
             target_dir = target_dir.normalized()
@@ -252,7 +284,16 @@ class ZombieBase(Entity):
             self.y += step_height
             self.position += move_amount
         else:
-            # KẸT TƯỜNG -> ÁP DỤNG WALL SLIDING
+            # KẸT TƯỜNG
+            # 1. KÍCH HOẠT A* BREADCRUMB: Nếu bị kẹt quá 1.0s, cầu cứu mạng lưới NavGraph
+            if self.path_recalc_timer > 1.0:
+                self.path_recalc_timer = 0.0
+                new_path = NavGraph.get_instance().find_path(self.position, self.player.position)
+                if new_path:
+                    self.current_path = new_path
+                    return # Nghỉ 1 frame để đi theo đường mới vào frame sau
+
+            # 2. VẪN ÁP DỤNG WALL SLIDING để mượt mà khi di chuyển qua các điểm
             # Lấy vector pháp tuyến (normal) của bề mặt cản
             normal = high_hit.world_normal if high_blocked else low_hit.world_normal
             

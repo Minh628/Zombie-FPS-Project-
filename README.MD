@@ -74,7 +74,9 @@ File hud.py sẽ giao tiếp với player.py để cập nhật thanh máu và �
 ## Thay đổi gần đây
 - **Tối ưu hiệu năng Zombie (Selective Throttling & Animation Culling)**: Giảm thiểu đáng kể hiện tượng giật lag khi spawn nhiều zombie. Đã khôi phục đầy đủ tia quét đất và 2 tia quét trước ngực để leo dốc mượt mà. CHỈ giới hạn (Throttling 150ms) hệ thống bắn 8 tia dò tìm góc lách tường. Quản lý chặt chẽ vòng đời hoạt ảnh (gọi hàm `stop()` khi culling hoặc despawn để giải phóng CPU khỏi việc tính toán xương).
 - **Sửa lỗi Animation**: Khắc phục triệt để lỗi đơ T-pose khi zombie ra/vào tầm nhìn. Đồng thời thiết lập cơ chế đồng bộ đòn đánh động (`Dynamic Duration`): tự động trích xuất độ dài file 3D và kích nổ sát thương ở 50% hoạt ảnh, giúp đòn chém chuẩn xác với mọi loại zombie kể cả Boss.
-- **Thông minh hóa AI tìm đường**: Nâng cấp thuật toán lách góc rườm rà thành Toán học trượt tường (Vector Wall Sliding). Tự động chiếu Vector hướng đi lên mặt phẳng pháp tuyến (Normal Vector). Kết hợp đột phá với công nghệ **Tích có hướng (Cross Product)** để sinh ra Vector tiếp tuyến, xóa bỏ hoàn toàn lỗ hổng kẹt góc 90 độ (Dead-on Collision), giúp zombie uốn lượn theo mọi loại vật cản mà không hề tốn tài nguyên CPU quét tia.
+- **Thông minh hóa AI tìm đường**: Nâng cấp thuật toán AI rượt đuổi lên chuẩn AAA bằng hệ thống kép (Hybrid Pathfinding):
+  1. **Toán học trượt tường (Vector Wall Sliding)**: Chiếu Vector hướng đi lên mặt phẳng pháp tuyến (Normal Vector), kết hợp **Tích có hướng (Cross Product)** để trượt mượt mà uốn lượn theo mọi loại vật cản, xử lý triệt để góc chết 90 độ.
+  2. **A* Breadcrumb (NavGraph Động)**: Hệ thống tự động lưu vết chân của Player mỗi 3 mét (Rải bánh mì) để dệt thành lưới giao thông (NavGraph). Khi Zombie kẹt góc lõm (chữ U), nó tự động gọi thuật toán **A*** lên lưới bánh mì này để tìm đường vòng qua ngõ cụt mà không hề làm tụt FPS (do Graph thưa thớt và dùng Path Caching).
 - **Tách cấu hình hệ thống**: Chuyển phần cấu hình engine và dọn dẹp cache (ngăn lỗi vật liệu Panda3D) từ `main.py` sang `core/engine_setup.py`.
 
 ## API/Function mới
