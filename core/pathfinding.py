@@ -12,10 +12,10 @@ class NavGraph:
         return cls._instance
 
     def __init__(self):
-        self.nodes = [] # List of Vec3
-        self.edges = {} # dict mapping node index to list of (neighbor_index, cost)
+        self.nodes = [] # Tọa độ [Vec3, Vec3, ...]
+        self.edges = {} # dict: node_idx -> list of (neighbor_idx, cost)
         self.last_player_pos = None
-        self.node_spacing = 1.0
+        self.node_spacing = 0.7 # Rải dày hơn một chút để bo góc mượt
         self.max_connection_dist = 3.0
 
     def clear(self):
@@ -35,36 +35,55 @@ class NavGraph:
         self.nodes.append(pos)
         self.edges[new_idx] = []
         
-        # Nối node mới với các node cũ (nếu khoảng cách < max_connection_dist và không bị che)
-        for i, old_pos in enumerate(self.nodes[:-1]):
+        # 1. LUÔN LUÔN NỐI VỚI HẠT TRƯỚC ĐÓ ĐỂ CHỐNG ĐỨT CÁP
+        if new_idx > 0:
+            last_idx = new_idx - 1
+            dist = distance(pos, self.nodes[last_idx])
+            self.edges[new_idx].append((last_idx, dist))
+            self.edges[last_idx].append((new_idx, dist))
+
+        # 2. Nối với các node xa hơn để tạo "Đường tắt" (Shortcut)
+        from core.utils import get_map_entity
+        map_ent = get_map_entity()
+        for i, old_pos in enumerate(self.nodes[:-2]): # Bỏ qua hạt cuối cùng đã nối ở trên
             dist = distance(pos, old_pos)
             if dist < self.max_connection_dist:
-                # Raycast kiểm tra line of sight ở tầm ngang ngực (cách đất 1.0m)
+                # Raycast kiểm tra line of sight với target là mặt tường
                 dir_vec = (old_pos - pos).normalized()
-                hit = raycast(origin=pos + Vec3(0, 1.0, 0), direction=dir_vec, distance=dist, ignore=[])
-                if not hit.hit or hasattr(hit.entity, 'is_alive'): # Nếu không đụng tường (tường không có is_alive)
+                hit = raycast(origin=pos + Vec3(0, 1.0, 0), direction=dir_vec, distance=dist, traverse_target=map_ent if map_ent else scene)
+                if not hit.hit: # Nếu không đụng tường
                     self.edges[new_idx].append((i, dist))
                     self.edges[i].append((new_idx, dist))
 
     def get_nearest_visible_node(self, pos):
         if not self.nodes: return -1
         
-        # Lấy danh sách sắp xếp theo khoảng cách
-        sorted_nodes = []
+        # 1. Lọc thô bằng Bounding Box (Màng lọc tọa độ đơn giản)
+        # Khử 90% các phép tính Căn bậc 2 (distance) dư thừa
+        candidate_nodes = []
         for i, node in enumerate(self.nodes):
-            sorted_nodes.append((distance(pos, node), i))
-        sorted_nodes.sort()
+            if abs(node.x - pos.x) < 20 and abs(node.z - pos.z) < 20:
+                candidate_nodes.append((distance(pos, node), i))
+                
+        # Nếu màn lọc thô quá khắt khe khiến không tìm thấy điểm nào, fallback duyệt toàn bộ
+        if not candidate_nodes:
+            for i, node in enumerate(self.nodes):
+                candidate_nodes.append((distance(pos, node), i))
+
+        candidate_nodes.sort()
         
-        # Bắn tia kiểm tra điểm nào KHÔNG bị che bởi tường
-        for dist_val, i in sorted_nodes:
+        # 2. Bắn tia kiểm tra điểm nào KHÔNG bị che bởi tường
+        from core.utils import get_map_entity
+        map_ent = get_map_entity()
+        for dist_val, i in candidate_nodes[:10]:
             if dist_val < 0.1: return i # Quá gần thì lấy luôn
             dir_vec = (self.nodes[i] - pos).normalized()
-            hit = raycast(origin=pos + Vec3(0, 1.0, 0), direction=dir_vec, distance=dist_val, ignore=[])
-            if not hit.hit or hasattr(hit.entity, 'is_alive'):
+            hit = raycast(origin=pos + Vec3(0, 1.0, 0), direction=dir_vec, distance=dist_val, traverse_target=map_ent if map_ent else scene)
+            if not hit.hit:
                 return i
                 
         # Nếu mọi điểm đều bị che, đành bốc đại điểm gần nhất
-        return sorted_nodes[0][1] if sorted_nodes else -1
+        return candidate_nodes[0][1] if candidate_nodes else -1
 
     def find_path(self, start_pos, end_pos):
         start_idx = self.get_nearest_visible_node(start_pos)

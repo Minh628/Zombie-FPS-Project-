@@ -56,6 +56,14 @@ class ZombieBase(Entity):
         self.current_path = []
         self.path_recalc_timer = 0.0
         self._los_timer = 0.0
+        
+        # --- Physics Caching ---
+        self._physics_timer = 0.0
+        self._cached_low_blocked = False
+        self._cached_high_blocked = False
+        self._cached_slide_dir = None
+        self._cached_los_hit = True # Mặc định là bị block
+        
         self._was_visible = True
 
         # Callbacks
@@ -204,8 +212,30 @@ class ZombieBase(Entity):
         self._handle_attack(dist, stopping_distance)
 
     def _handle_culling(self, dist):
-        """Khoảng cách quá xa thì ẩn đi để tiết kiệm GPU & CPU (Animation)"""
-        if dist > 45:
+        """Tối ưu GPU & CPU: Culling dựa trên khoảng cách VÀ góc nhìn Camera (Frustum Culling)"""
+        from ursina import camera
+        
+        should_cull = False
+        
+        if dist > 55:
+            should_cull = True
+        else:
+            # Góc nhìn: Vector từ camera đến zombie
+            cam_to_zombie = self.position - camera.world_position
+            cam_to_zombie.y = 0
+            if cam_to_zombie.length() > 0:
+                cam_to_zombie = cam_to_zombie.normalized()
+                cam_forward = camera.forward
+                cam_forward.y = 0
+                if cam_forward.length() > 0:
+                    cam_forward = cam_forward.normalized()
+                    dot_product = cam_to_zombie.dot(cam_forward)
+                    
+                    # Nếu dot_product < -0.2 (nằm sau lưng camera) và ở xa hơn 3.5m (tránh giấu lầm khi lại gần)
+                    if dot_product < -0.2 and dist > 3.5:
+                        should_cull = True
+
+        if should_cull:
             if self.visible:
                 self.visible = False
                 self._was_visible = False
@@ -222,28 +252,85 @@ class ZombieBase(Entity):
                          self._play_anim(self._walk_anim)
 
     def _handle_movement(self, dist, stopping_distance):
-        """Tính toán đường đi, A* Breadcrumb và trượt tường"""
+        """Hàm chính điều phối di chuyển (Đã Refactor SRP)"""
+        # Cập nhật timer chung
+        self.path_recalc_timer += time.dt
+        self._los_timer += time.dt
+        self._physics_timer += time.dt
+        
         if dist <= stopping_distance:
             self.current_path = [] # Tới nơi thì xóa đường
             return
+            
+        # 1. Tìm mục tiêu (AI)
+        target_pos = self._update_ai_target()
+        
+        if target_pos is None:
+            target_pos = self.position
 
-        self.path_recalc_timer += time.dt
-        target_pos = self.player.position
+        # Tính toán hướng tới mục tiêu
+        target_dir = target_pos - self.position
+        target_dir.y = 0
+        if target_dir.length() > 0:
+            target_dir = target_dir.normalized()
+
+        move_amount = target_dir * self.speed * time.dt
+        step_height = 0.6
+        
+        # 2. Áp dụng Vật lý và Trượt tường
+        self._apply_physics_movement(target_dir, move_amount, step_height)
+
+    def _update_ai_target(self):
+        """AI Tầm nhìn (LOS) và Tìm đường (A*) - Phần 1 của Movement"""
+        from core.utils import get_map_entity
+        map_ent = get_map_entity()
+        
+        target_pos = None
+
+        # Nếu chưa có đường (hoặc mất mục tiêu), chạy A* để tìm đường tới Player
+        if not self.current_path:
+            # KIỂM TRA THỊ GIÁC (THROTTLED LOS CHECK)
+            player_dir = self.player.position - self.position
+            player_dir.y = 0
+            player_dist = player_dir.length()
+            
+            if self._los_timer > 0.2:
+                self._los_timer = 0.0
+                if player_dist > 0:
+                    pd = player_dir.normalized()
+                    hit = raycast(origin=self.position + Vec3(0, 1.0, 0), direction=pd, distance=player_dist, traverse_target=map_ent if map_ent else scene)
+                    self._cached_los_hit = hit.hit
+
+            if player_dist > 0 and not self._cached_los_hit:
+                self.current_path = [] # Vứt bỏ đường bánh mì, đuổi thẳng!
+                target_pos = self.player.position
+            else:
+                # Nếu bị khuất tầm nhìn, tìm đường theo bánh mì NavGraph (CÓ THỜI GIAN DELAY)
+                if self.path_recalc_timer > 0.2:
+                    self.path_recalc_timer = 0.0
+                    self.current_path = NavGraph.get_instance().find_path(self.position, self.player.position)
+                
+                if self.current_path:
+                    target_pos = self.current_path[0] # Không pop để giữ đường
+                else:
+                    target_pos = self.position # Đứng im nếu chưa tìm được đường
 
         # NẾU ĐANG CÓ ĐƯỜNG A* -> Ưu tiên đi theo các hạt bánh mì
-        if self.current_path:
-            # KIỂM TRA THỊ GIÁC PHẢN XẢ (LOS OVERRIDE)
-            self._los_timer += time.dt
+        else:
+            # KIỂM TRA THỊ GIÁC PHẢN XẢ (THROTTLED LOS OVERRIDE)
+            player_dir = self.player.position - self.position
+            player_dir.y = 0
+            player_dist = player_dir.length()
+            
             if self._los_timer > 0.5:
                 self._los_timer = 0.0
-                player_dir = self.player.position - self.position
-                player_dist = player_dir.length()
                 if player_dist > 0:
-                    player_dir = player_dir.normalized()
-                    hit = raycast(origin=self.position + Vec3(0, 1.0, 0), direction=player_dir, distance=player_dist, ignore=[self, self.player])
-                    # Nếu quét tia thẳng tới Player mà không chạm bức tường nào (hoặc chạm quái)
-                    if not hit.hit or hasattr(hit.entity, 'is_alive'):
-                        self.current_path = [] # Vứt bỏ đường bánh mì, đuổi thẳng!
+                    pd = player_dir.normalized()
+                    hit = raycast(origin=self.position + Vec3(0, 1.0, 0), direction=pd, distance=player_dist, traverse_target=map_ent if map_ent else scene)
+                    self._cached_los_hit = hit.hit
+                    
+                    if not self._cached_los_hit:
+                        self.current_path = []
                         target_pos = self.player.position
 
             # NẾU VẪN CÒN ĐƯỜNG SAU KHI QUÉT LOS
@@ -254,71 +341,66 @@ class ZombieBase(Entity):
                     self.current_path.pop(0)
                     if self.current_path:
                         target_pos = self.current_path[0]
+                    else:
+                        target_pos = self.player.position
                 else:
                     target_pos = next_wp
+                    
+        return target_pos
 
-        # Tính toán hướng tới mục tiêu (Player hoặc Waypoint)
-        target_dir = target_pos - self.position
-        target_dir.y = 0
-        if target_dir.length() > 0:
-            target_dir = target_dir.normalized()
+    def _apply_physics_movement(self, target_dir, move_amount, step_height):
+        """Trượt tường bằng tia Raycast Caching - Phần 2 của Movement"""
+        from core.utils import get_map_entity
+        map_ent = get_map_entity()
+        
+        # --- PHYSICS CACHING (THROTTLED RAYCASTS 5 FPS) ---
+        if self._physics_timer > 0.2:
+            self._physics_timer = 0.0
+            
+            low_origin = self.position + Vec3(0, 0.2, 0)
+            high_origin = self.position + Vec3(0, 1.2, 0)
+            ray_dist = self.speed * 0.2 + 0.8 # Nhìn trước khoảng cách trong 0.2s tới
+            
+            low_hit = raycast(origin=low_origin, direction=target_dir, distance=ray_dist, traverse_target=map_ent if map_ent else scene)
+            high_hit = raycast(origin=high_origin, direction=target_dir, distance=ray_dist, traverse_target=map_ent if map_ent else scene)
 
-        move_amount = target_dir * self.speed * time.dt
-        step_height = 0.6
-        ray_dist = self.speed * time.dt + 0.8
+            self._cached_low_blocked = low_hit.hit
+            self._cached_high_blocked = high_hit.hit
+            
+            normal = high_hit.world_normal if self._cached_high_blocked else low_hit.world_normal
+            self._cached_slide_dir = None
+            
+            if (self._cached_low_blocked or self._cached_high_blocked) and normal and normal.length() > 0:
+                normal.y = 0
+                if normal.length() > 0:
+                    n = normal.normalized()
+                    dot_product = target_dir.x * n.x + target_dir.z * n.z
+                    s_dir = Vec3(
+                        target_dir.x - dot_product * n.x,
+                        0,
+                        target_dir.z - dot_product * n.z
+                    )
+                    
+                    if s_dir.length() < 0.1:
+                        s_dir = n.cross(Vec3(0, 1, 0))
+                    
+                    if s_dir.length() > 0.01:
+                        s_dir = s_dir.normalized()
+                        slide_hit = raycast(origin=self.position + Vec3(0, 0.5, 0), direction=s_dir, distance=self.speed * 0.2 + 0.5, traverse_target=map_ent if map_ent else scene)
+                        if not slide_hit.hit:
+                            self._cached_slide_dir = s_dir
 
-        low_origin = self.position + Vec3(0, 0.2, 0)
-        high_origin = self.position + Vec3(0, 1.2, 0)
-
-        # Quét 2 tia liên tục để bám mặt đất và dốc
-        low_hit = raycast(origin=low_origin, direction=target_dir, distance=ray_dist, ignore=[self, self.player])
-        high_hit = raycast(origin=high_origin, direction=target_dir, distance=ray_dist, ignore=[self, self.player])
-
-        low_blocked = low_hit.hit and not hasattr(low_hit.entity, 'is_alive')
-        high_blocked = high_hit.hit and not hasattr(high_hit.entity, 'is_alive')
-
-        if not low_blocked and not high_blocked:
+        # ÁP DỤNG DI CHUYỂN TỪ CACHE (MƯỢT 60 FPS)
+        if not self._cached_low_blocked and not self._cached_high_blocked:
             self.position += move_amount
-        elif low_blocked and not high_blocked:
+        elif self._cached_low_blocked and not self._cached_high_blocked:
             # Leo dốc / bước lên bậc
             self.y += step_height
             self.position += move_amount
         else:
-            # KẸT TƯỜNG
-            # 1. KÍCH HOẠT A* BREADCRUMB: Nếu bị kẹt quá 1.0s, cầu cứu mạng lưới NavGraph
-            if self.path_recalc_timer > 1.0:
-                self.path_recalc_timer = 0.0
-                new_path = NavGraph.get_instance().find_path(self.position, self.player.position)
-                if new_path:
-                    self.current_path = new_path
-                    return # Nghỉ 1 frame để đi theo đường mới vào frame sau
-
-            # 2. VẪN ÁP DỤNG WALL SLIDING để mượt mà khi di chuyển qua các điểm
-            # Lấy vector pháp tuyến (normal) của bề mặt cản
-            normal = high_hit.world_normal if high_blocked else low_hit.world_normal
-            
-            if normal and normal.length() > 0:
-                # Ép vector pháp tuyến nằm trên mặt đất (X, Z) để không đẩy zombie bay lên trời
-                normal.y = 0
-                if normal.length() > 0:
-                    normal = normal.normalized()
-                    
-                    # Công thức chiếu Vector: Tính toán hướng trượt dọc theo mặt tường
-                    dot_product = target_dir.x * normal.x + target_dir.z * normal.z
-                    slide_dir = Vec3(
-                        target_dir.x - dot_product * normal.x,
-                        0,
-                        target_dir.z - dot_product * normal.z
-                    )
-                    
-                    # FIX GÓC CHẾT 90 ĐỘ: Nếu zombie đâm thẳng mặt vào tường, lực trượt sẽ bị triệt tiêu (~0)
-                    if slide_dir.length() < 0.1:
-                        # Dùng Tích Có Hướng (Cross Product) sinh ra Vector Tiếp Tuyến ép zombie rẽ sang một bên
-                        slide_dir = normal.cross(Vec3(0, 1, 0))
-                    
-                    if slide_dir.length() > 0.01:
-                        slide_dir = slide_dir.normalized()
-                        self.position += slide_dir * self.speed * time.dt
+            # KẸT TƯỜNG -> Dùng slide_dir đã cache
+            if self._cached_slide_dir:
+                self.position += self._cached_slide_dir * self.speed * time.dt
 
     def _handle_attack(self, dist, stopping_distance):
         """Kích hoạt tấn công hoặc chạy hoạt ảnh di chuyển"""
@@ -379,17 +461,17 @@ class ZombieBase(Entity):
         self._play_anim(self._attack_anim or "Attack")
         
         # --- CẢI TIẾN: Lấy thời gian thực của hoạt ảnh tấn công ---
-        hit_delay = 0.4 # Default fallback
+        hit_delay = 0.8 # Default fallback
         try:
             if hasattr(self, 'actor') and self.actor:
                 anim_len = self.actor.getDuration(self._attack_anim or "Attack")
                 if anim_len is not None and anim_len > 0:
-                    hit_delay = anim_len * 0.5 # Sát thương nổ ra ở chính giữa đòn đánh
+                    hit_delay = anim_len * 0.85 # Sát thương nổ ra ở cuối đòn đánh (khi tay vung tới sát người)
         except Exception:
             pass
 
         # Giới hạn an toàn: không được quá dài hoặc quá ngắn
-        hit_delay = max(0.2, min(hit_delay, self.attack_cooldown * 0.5))
+        hit_delay = max(0.4, min(hit_delay, self.attack_cooldown * 0.95))
         
         invoke(self._apply_damage_delayed, delay=hit_delay)
         

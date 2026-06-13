@@ -31,3 +31,18 @@ def format_time(seconds):
     minutes = int(seconds) // 60
     secs = int(seconds) % 60
     return f'{minutes:02d}:{secs:02d}'
+
+
+_MAP_ENTITY_CACHE = None
+
+def get_map_entity():
+    """Hàm lấy thực thể Bản đồ (Map) một lần duy nhất để tối ưu Raycast"""
+    global _MAP_ENTITY_CACHE
+    if _MAP_ENTITY_CACHE is None:
+        from ursina import scene
+        for e in scene.entities:
+            # Tìm thực thể nào có chứa chữ map.obj
+            if hasattr(e, 'model') and e.model and 'map.obj' in str(e.model).lower():
+                _MAP_ENTITY_CACHE = e
+                break
+    return _MAP_ENTITY_CACHE
