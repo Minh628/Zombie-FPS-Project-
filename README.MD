@@ -29,8 +29,8 @@ zombie_fps_project/
 │   ├── weapon.py           # Xử lý súng (raycast, cooldown, nạp đạn)
 │   └── enemies/            # Quản lý kẻ địch
 │       ├── zombie_base.py  # Class gốc của zombie
-│       └── zombie_fast.py  # Biến thể zombie chạy nhanh
-│
+│       ├── zombie_fast.py  # Biến thể zombie chạy nhanh
+│       └── zombie_boss.py  # Biến thể zombie trùm (Máu trâu, có hoạt ảnh riêng)
 ├── ui/                     # Giao diện người dùng
 │   ├── main_menu.py        # Màn hình bắt đầu game, bảng xếp hạng
 │   └── hud.py              # Overlay trong game (thanh máu người chơi, số đạn)
