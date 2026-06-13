@@ -51,6 +51,12 @@ class ZombieBase(Entity):
         self.moan_interval = 4.5
         self._moan_timer = 0.0
 
+        # --- Throttling Variables ---
+        self._raycast_timer = 0.0
+        self._raycast_interval = 0.15 # 150ms mỗi lần quét
+        self._cached_direction = Vec3(0, 0, 0)
+        self._was_visible = True
+
         # Callbacks
         self.on_death = None
 
@@ -154,6 +160,8 @@ class ZombieBase(Entity):
             health_ratio = self.health / self.max_health
             self.health_bar.scale_x = 0.95 * health_ratio
         self._current_anim = None  # Reset để cho phép play lại anim walk
+        self._was_visible = True
+        self._raycast_timer = 0.0
         if self._walk_anim:
             self._play_anim(self._walk_anim)
 
@@ -164,6 +172,8 @@ class ZombieBase(Entity):
         self.visible = False
         self.position = Vec3(0, -999, 0)  # Đẩy sâu xuống đất cách xa camera
         self._current_anim = None
+        if hasattr(self, 'actor') and self.actor:
+            self.actor.stop() # Culling Animation
 
     # ==============================================================
     # UPDATE LOOP: Distance Culling + Logic di chuyển
@@ -193,32 +203,44 @@ class ZombieBase(Entity):
         self._handle_attack(dist, stopping_distance)
 
     def _handle_culling(self, dist):
-        """Khoảng cách quá xa thì ẩn đi để tiết kiệm GPU"""
+        """Khoảng cách quá xa thì ẩn đi để tiết kiệm GPU & CPU (Animation)"""
         if dist > 45:
-            self.visible = False
+            if self.visible:
+                self.visible = False
+                self._was_visible = False
+                if hasattr(self, 'actor') and self.actor:
+                    self.actor.stop() # Dừng hẳn tính toán xương
+                    self._current_anim = None # Reset cờ animation để không bị đơ T-Pose khi quay lại
         else:
-            self.visible = True
+            if not self.visible:
+                self.visible = True
+                if not self._was_visible:
+                    # Kích hoạt lại animation nếu vừa từ trạng thái ẩn trở lại
+                    self._was_visible = True
+                    if self._walk_anim and self.can_attack:
+                         self._play_anim(self._walk_anim)
 
     def _handle_movement(self, dist, stopping_distance):
-        """Tính toán đường đi, raycast, né vật cản"""
+        """Tính toán đường đi, leo dốc và trượt dọc theo vật cản (Wall Sliding)"""
         if dist <= stopping_distance:
             return
 
-        direction = direction_to(self, self.player)
-        direction.y = 0
+        # Tính toán hướng tới player
+        target_dir = direction_to(self, self.player)
+        target_dir.y = 0
+        if target_dir.length() > 0:
+            target_dir = target_dir.normalized()
 
-        if direction.length() > 0:
-            direction = direction.normalized()
-
-        move_amount = direction * self.speed * time.dt
-        step_height = 0.6  
+        move_amount = target_dir * self.speed * time.dt
+        step_height = 0.6
         ray_dist = self.speed * time.dt + 0.8
 
-        low_origin = self.position + Vec3(0, 0.2, 0)   
-        high_origin = self.position + Vec3(0, 1.2, 0)   
+        low_origin = self.position + Vec3(0, 0.2, 0)
+        high_origin = self.position + Vec3(0, 1.2, 0)
 
-        low_hit = raycast(origin=low_origin, direction=direction, distance=ray_dist, ignore=[self, self.player])
-        high_hit = raycast(origin=high_origin, direction=direction, distance=ray_dist, ignore=[self, self.player])
+        # Quét 2 tia liên tục để bám mặt đất và dốc
+        low_hit = raycast(origin=low_origin, direction=target_dir, distance=ray_dist, ignore=[self, self.player])
+        high_hit = raycast(origin=high_origin, direction=target_dir, distance=ray_dist, ignore=[self, self.player])
 
         low_blocked = low_hit.hit and not hasattr(low_hit.entity, 'is_alive')
         high_blocked = high_hit.hit and not hasattr(high_hit.entity, 'is_alive')
@@ -226,29 +248,36 @@ class ZombieBase(Entity):
         if not low_blocked and not high_blocked:
             self.position += move_amount
         elif low_blocked and not high_blocked:
+            # Leo dốc / bước lên bậc
             self.y += step_height
             self.position += move_amount
         else:
-            import math
-            angles = [45, -45, 90, -90]
-
-            for angle in angles:
-                rad = math.radians(angle)
-                new_dx = direction.x * math.cos(rad) - direction.z * math.sin(rad)
-                new_dz = direction.x * math.sin(rad) + direction.z * math.cos(rad)
-                test_dir = Vec3(new_dx, 0, new_dz).normalized()
-
-                test_high = raycast(origin=high_origin, direction=test_dir, distance=ray_dist, ignore=[self, self.player])
-                test_low = raycast(origin=low_origin, direction=test_dir, distance=ray_dist, ignore=[self, self.player])
-
-                t_high_blocked = test_high.hit and not hasattr(test_high.entity, 'is_alive')
-                t_low_blocked = test_low.hit and not hasattr(test_low.entity, 'is_alive')
-
-                if not t_high_blocked:
-                    if t_low_blocked:
-                        self.y += step_height
-                    self.position += test_dir * self.speed * time.dt
-                    break
+            # KẸT TƯỜNG -> ÁP DỤNG WALL SLIDING
+            # Lấy vector pháp tuyến (normal) của bề mặt cản
+            normal = high_hit.world_normal if high_blocked else low_hit.world_normal
+            
+            if normal and normal.length() > 0:
+                # Ép vector pháp tuyến nằm trên mặt đất (X, Z) để không đẩy zombie bay lên trời
+                normal.y = 0
+                if normal.length() > 0:
+                    normal = normal.normalized()
+                    
+                    # Công thức chiếu Vector: Tính toán hướng trượt dọc theo mặt tường
+                    dot_product = target_dir.x * normal.x + target_dir.z * normal.z
+                    slide_dir = Vec3(
+                        target_dir.x - dot_product * normal.x,
+                        0,
+                        target_dir.z - dot_product * normal.z
+                    )
+                    
+                    # FIX GÓC CHẾT 90 ĐỘ: Nếu zombie đâm thẳng mặt vào tường, lực trượt sẽ bị triệt tiêu (~0)
+                    if slide_dir.length() < 0.1:
+                        # Dùng Tích Có Hướng (Cross Product) sinh ra Vector Tiếp Tuyến ép zombie rẽ sang một bên
+                        slide_dir = normal.cross(Vec3(0, 1, 0))
+                    
+                    if slide_dir.length() > 0.01:
+                        slide_dir = slide_dir.normalized()
+                        self.position += slide_dir * self.speed * time.dt
 
     def _handle_attack(self, dist, stopping_distance):
         """Kích hoạt tấn công hoặc chạy hoạt ảnh di chuyển"""
@@ -280,6 +309,7 @@ class ZombieBase(Entity):
     def _apply_gravity_and_ground(self):
         half_height = self._half_height()
         ray_origin = self.position + Vec3(0, half_height + 0.05, 0)
+        
         hit_down = raycast(
             origin=ray_origin,
             direction=Vec3(0, -1, 0),
@@ -300,21 +330,29 @@ class ZombieBase(Entity):
         self.y += self.vertical_velocity * time.dt
 
     def attack(self):
-        """Tấn công player khi đủ gần (Đã sửa: Chờ animation cào xong mới tính sát thương)."""
+        """Tấn công player khi đủ gần (Sát thương tính theo % animation)."""
         if not self.can_attack or not self.player:
             return
 
         self.can_attack = False
         self._play_anim(self._attack_anim or "Attack")
         
-        # --- CẢI TIẾN: Trì hoãn việc gây sát thương ---
-        # Giả định animation cào mất 0.4 giây để vung tay chạm mục tiêu.
-        # Bạn có thể điều chỉnh con số 0.4 này cho khớp với model 3D của bạn.
-        hit_delay = 0.4
+        # --- CẢI TIẾN: Lấy thời gian thực của hoạt ảnh tấn công ---
+        hit_delay = 0.4 # Default fallback
+        try:
+            if hasattr(self, 'actor') and self.actor:
+                anim_len = self.actor.getDuration(self._attack_anim or "Attack")
+                if anim_len is not None and anim_len > 0:
+                    hit_delay = anim_len * 0.5 # Sát thương nổ ra ở chính giữa đòn đánh
+        except Exception:
+            pass
+
+        # Giới hạn an toàn: không được quá dài hoặc quá ngắn
+        hit_delay = max(0.2, min(hit_delay, self.attack_cooldown * 0.5))
         
         invoke(self._apply_damage_delayed, delay=hit_delay)
         
-        # Cooldown tổng của đòn đánh tính từ lúc bắt đầu giơ tay
+        # Cooldown tổng của đòn đánh
         invoke(self._reset_attack, delay=self.attack_cooldown)
 
     def _apply_damage_delayed(self):

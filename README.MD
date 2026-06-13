@@ -70,3 +70,14 @@ Mỗi vật thể sống hoặc tương tác được trong game (Player, Súng,
 Dành cho UI/UX Developer.
 
 File hud.py sẽ giao tiếp với player.py để cập nhật thanh máu và đạn lên màn hình thông qua các hàm Observer/Callback.
+
+## Thay đổi gần đây
+- **Tối ưu hiệu năng Zombie (Selective Throttling & Animation Culling)**: Giảm thiểu đáng kể hiện tượng giật lag khi spawn nhiều zombie. Đã khôi phục đầy đủ tia quét đất và 2 tia quét trước ngực để leo dốc mượt mà. CHỈ giới hạn (Throttling 150ms) hệ thống bắn 8 tia dò tìm góc lách tường. Quản lý chặt chẽ vòng đời hoạt ảnh (gọi hàm `stop()` khi culling hoặc despawn để giải phóng CPU khỏi việc tính toán xương).
+- **Sửa lỗi Animation**: Khắc phục triệt để lỗi đơ T-pose khi zombie ra/vào tầm nhìn. Đồng thời thiết lập cơ chế đồng bộ đòn đánh động (`Dynamic Duration`): tự động trích xuất độ dài file 3D và kích nổ sát thương ở 50% hoạt ảnh, giúp đòn chém chuẩn xác với mọi loại zombie kể cả Boss.
+- **Thông minh hóa AI tìm đường**: Nâng cấp thuật toán lách góc rườm rà thành Toán học trượt tường (Vector Wall Sliding). Tự động chiếu Vector hướng đi lên mặt phẳng pháp tuyến (Normal Vector). Kết hợp đột phá với công nghệ **Tích có hướng (Cross Product)** để sinh ra Vector tiếp tuyến, xóa bỏ hoàn toàn lỗ hổng kẹt góc 90 độ (Dead-on Collision), giúp zombie uốn lượn theo mọi loại vật cản mà không hề tốn tài nguyên CPU quét tia.
+- **Tách cấu hình hệ thống**: Chuyển phần cấu hình engine và dọn dẹp cache (ngăn lỗi vật liệu Panda3D) từ `main.py` sang `core/engine_setup.py`.
+
+## API/Function mới
+- **`core/engine_setup.py`** -> `setup_engine_configs()`: Hàm khởi tạo các cấu hình hệ thống cấp thấp trước khi game bắt đầu (xóa thư mục `models_compressed` và tắt `model-cache-dir`).
+- **`entities/enemies/zombie_base.py`** (ZombieBase):
+  - Bổ sung logic lưu trữ hướng đi lách (`self._cached_direction`) kết hợp bộ đếm (`self._raycast_timer`, `self._raycast_interval`) để thực hiện Selective Raycast Throttling khi kẹt tường.
