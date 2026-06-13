@@ -142,6 +142,12 @@ class GameManager(Entity):
         application.paused = False
         self.ui.hide_pause()
 
+    def _stop_gameplay(self):
+        """Helper dừng các thành phần gameplay (level, player)."""
+        self.level.stop_waves()
+        self.player.enabled = False
+        self.player.disable_weapons()
+
     def game_over(self):
         """Đạo diễn hô: KẾT THÚC!"""
         if self.state != GameState.PLAYING:
@@ -149,12 +155,7 @@ class GameManager(Entity):
         self.state = GameState.GAME_OVER
         application.paused = False
 
-        # Dừng level
-        self.level.stop_waves()
-
-        # Disable player
-        self.player.enabled = False
-        self.player.disable_weapons()
+        self._stop_gameplay()
 
         # Lưu điểm vào database
         self._save_score()
@@ -170,9 +171,7 @@ class GameManager(Entity):
         self.state = GameState.MAIN_MENU
         application.paused = False
 
-        self.level.stop_waves()
-        self.player.enabled = False
-        self.player.disable_weapons()
+        self._stop_gameplay()
 
         self._load_leaderboard()
         self.ui.switch_to_menu_mode()

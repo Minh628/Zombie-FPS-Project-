@@ -52,37 +52,42 @@ class Player(FirstPersonController):
     # VŨ KHÍ
     # ==============================================================
 
-    def switch_weapon(self, index):
-        """Chuyển vũ khí."""
-        if index == self.current_weapon_index or index >= len(self.weapons):
+    def _set_active_weapon(self, index):
+        """Helper quản lý việc chuyển đổi vũ khí: tắt tất cả, bật vũ khí được chọn."""
+        if index < 0 or index >= len(self.weapons):
             return
-        self.current_weapon.enabled = False
-        self.current_weapon.on_ammo_changed = None
+            
+        for w in self.weapons:
+            w.enabled = False
+            w.on_ammo_changed = None
+            
         self.current_weapon_index = index
         self.current_weapon.enabled = True
         if self.on_weapon_changed:
             self.on_weapon_changed(self.current_weapon)
+
+    def switch_weapon(self, index):
+        """Chuyển vũ khí (dùng phím)."""
+        if index == self.current_weapon_index:
+            return
+        self._set_active_weapon(index)
         print(f'[Player] Switched to {self.current_weapon.weapon_name}')
 
     def equip_default_weapon(self):
         """Trang bị AK47 (vũ khí mặc định)."""
-        self.current_weapon_index = 0
-        for i, w in enumerate(self.weapons):
-            w.enabled = (i == 0)
-            w.on_ammo_changed = None
-        if self.on_weapon_changed:
-            self.on_weapon_changed(self.current_weapon)
+        self._set_active_weapon(0)
 
     def reset_weapons(self):
-        """Reset tất cả vũ khí về đạn đầy."""
+        """Reset tất cả vũ khí về đạn đầy (sử dụng logic nạp lại của từng súng)."""
         for w in self.weapons:
-            w.reset_ammo()
-        self.weapons[0].total_ammo = AK47_TOTAL_AMMO
-        self.weapons[1].total_ammo = PISTOL_TOTAL_AMMO
+            if hasattr(w, 'refill_ammo'):
+                w.refill_ammo()
+            else:
+                w.reset_ammo()
         self.equip_default_weapon()
 
     def disable_weapons(self):
-        """Ẩn tất cả vũ khí."""
+        """Ẩn tất cả vũ khí (khi chết hoặc game over)."""
         for w in self.weapons:
             w.enabled = False
             w.on_ammo_changed = None

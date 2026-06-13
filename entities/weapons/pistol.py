@@ -52,18 +52,12 @@ class Pistol(WeaponBase):
 
         # Cập nhật vị trí gốc (dùng cho hiệu ứng giật súng)
         self._base_pos = Vec3(0.4, -0.4, 1.2)
-    def shoot(self, automatic=False):
-        """Override để phát âm thanh khi bắn (giữ logic gốc)."""
-        prev_ammo = self.current_ammo
-        prev_can = self.can_shoot
-        super().shoot(automatic)
-        # Nếu đạn giảm và trước đó có thể bắn => một viên đã được bắn
-        if self.current_ammo < prev_ammo and prev_can and not self.is_reloading:
-            try:
-                self.shoot_sound.play()
-            except Exception:
-                pass
-            self._recoil()
+    def on_shoot(self, automatic):
+        """Hook phát âm thanh khi bắn thành công."""
+        try:
+            self.shoot_sound.play()
+        except Exception:
+            pass
     def _recoil(self):
         """Hiệu ứng giật (Súng lục giật nhanh hơn, nhẹ hơn AK)"""
         # Súng giật lùi
@@ -82,12 +76,4 @@ class Pistol(WeaponBase):
             invoke(lambda: setattr(self.player.camera_pivot, 'rotation_x', self.player.camera_pivot.rotation_x + 0.3), delay=0.06)
             
         # Hiệu ứng lửa đạn (Muzzle flash)
-        muzzle_flash = Entity(
-            parent=self,
-            model='sphere',
-            color=color.orange,
-            scale=0.05,
-            position=Vec3(0, 0.15, 0.6), # Vị trí đầu nòng súng lục
-            unlit=True
-        )
-        destroy(muzzle_flash, delay=0.04)
+        self.create_muzzle_flash(position=Vec3(0, 0.15, 0.6), scale=0.05, flash_color=color.orange)

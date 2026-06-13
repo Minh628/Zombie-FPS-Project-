@@ -83,6 +83,9 @@ class WeaponBase(Entity):
 
         self._notify_ammo()
         self._recoil()
+        
+        self.on_shoot(automatic)
+        
         invoke(self._reset_shoot, delay=self.fire_rate)
 
         if not self.is_melee and self.current_ammo <= 0 and self.total_ammo > 0:
@@ -109,6 +112,9 @@ class WeaponBase(Entity):
             return
         self.is_reloading = True
         print(f'[{self.weapon_name}] Reloading...')
+        
+        self.on_reload_start()
+        
         invoke(self._finish_reload, delay=self.reload_time)
 
     def _finish_reload(self):
@@ -142,6 +148,26 @@ class WeaponBase(Entity):
         self.current_ammo = self.max_ammo
         self.is_reloading = False
         self.can_shoot = True
+
+    # ==============================================================
+    # HOOKS CHO CLASS CON
+    # ==============================================================
+
+    def on_shoot(self, automatic):
+        """Hook để class con ghi đè phát âm thanh/hiệu ứng bắn."""
+        pass
+
+    def on_reload_start(self):
+        """Hook để class con ghi đè phát âm thanh nạp đạn."""
+        pass
+
+    def create_muzzle_flash(self, position=Vec3(0, 0.15, 0.6), scale=0.05, flash_color=color.orange):
+        """Helper chung tạo tia lửa nòng súng."""
+        flash = Entity(
+            parent=self, model='sphere', color=flash_color,
+            scale=scale, position=position, unlit=True
+        )
+        destroy(flash, delay=0.04)
 
 
 Weapon = WeaponBase

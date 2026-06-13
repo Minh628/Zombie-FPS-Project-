@@ -64,15 +64,19 @@ class AK47(WeaponBase):
         self.burst_sound.volume = 0.85
         self._burst_playing = False
 
-    def update(self):
-        # Nếu đang phát burst (loop) mà người chơi thả chuột, dừng burst
-        if self._burst_playing and not held_keys['left mouse']:
+    def _stop_burst(self):
+        if self._burst_playing:
             try:
                 self.burst_sound.stop()
                 self.burst_sound.loop = False
             except Exception:
                 pass
             self._burst_playing = False
+
+    def update(self):
+        # Nếu đang phát burst (loop) mà người chơi thả chuột, dừng burst
+        if self._burst_playing and not held_keys['left mouse']:
+            self._stop_burst()
 
     def _recoil(self):
         """Hiệu ứng giật"""
@@ -92,56 +96,26 @@ class AK47(WeaponBase):
             invoke(lambda: setattr(self.player.camera_pivot, 'rotation_x', self.player.camera_pivot.rotation_x + 0.5), delay=0.08)
             
         # Hiệu ứng lửa đạn (Muzzle flash)
-        muzzle_flash = Entity(
-            parent=self,
-            model='sphere',
-            color=color.yellow,
-            scale=0.08,
-            position=Vec3(-0.05, 0.1, 0.8), # Vị trí đầu nòng súng (khoảng chừng)
-            unlit=True
-        )
-        destroy(muzzle_flash, delay=0.05)
+        self.create_muzzle_flash(position=Vec3(-0.05, 0.1, 0.8), scale=0.08, flash_color=color.yellow)
 
-    def shoot(self, automatic=False):
-        """Override để phát âm thanh khi bắn (giữ logic gốc).
-        Nếu `automatic` True thì đang bắn liên tục (nhấn giữ): phát burst loop.
-        Nếu `automatic` False thì là cú bắn đơn: phát tiếng nổ đơn.
-        """
-        prev_ammo = self.current_ammo
-        prev_can = self.can_shoot
-        super().shoot(automatic=automatic)
-        # Nếu lượng đạn giảm thì một viên đã được bắn
-        if self.current_ammo < prev_ammo and prev_can:
-            if automatic:
-                # Bắt đầu phát burst loop (nếu chưa phát)
-                if not self._burst_playing:
-                    try:
-                        self.burst_sound.loop = True
-                        self.burst_sound.play()
-                    except Exception:
-                        pass
-                    self._burst_playing = True
-            else:
-                # Bắn đơn: phát tiếng shot
+    def on_shoot(self, automatic):
+        if automatic:
+            if not self._burst_playing:
                 try:
-                    self.shot_sound.play()
+                    self.burst_sound.loop = True
+                    self.burst_sound.play()
                 except Exception:
                     pass
-
-    def reload(self):
-        """Override để phát âm thanh nạp đạn khi bắt đầu reload."""
-        was_reloading = self.is_reloading
-        super().reload()
-        if not was_reloading and self.is_reloading:
+                self._burst_playing = True
+        else:
             try:
-                # Dừng burst nếu đang phát
-                if self._burst_playing:
-                    try:
-                        self.burst_sound.stop()
-                        self.burst_sound.loop = False
-                    except Exception:
-                        pass
-                    self._burst_playing = False
-                self.reload_sound.play()
+                self.shot_sound.play()
             except Exception:
                 pass
+
+    def on_reload_start(self):
+        self._stop_burst()
+        try:
+            self.reload_sound.play()
+        except Exception:
+            pass

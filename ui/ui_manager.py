@@ -19,32 +19,36 @@ class UIManager:
         self.game_over = GameOverScreen()
 
     # ==============================================================
-    # CHUYỂN CHẾ ĐỘ HIỂN THỊ (1 lệnh duy nhất)
+    # CHUYỂN CHẾ ĐỘ HIỂN THỊ
     # ==============================================================
+
+    def _hide_all_except(self, active_screen):
+        """Tắt tất cả các màn hình, chỉ bật màn hình được chỉ định."""
+        screens = [self.hud, self.menu, self.pause, self.game_over]
+        for screen in screens:
+            if screen != active_screen:
+                screen.hide()
+        if active_screen:
+            active_screen.show()
 
     def switch_to_menu_mode(self):
         """Hiển thị menu chính, ẩn mọi thứ khác."""
-        self.hud.hide()
-        self.pause.hide()
-        self.game_over.hide()
-        self.menu.show()
+        self._hide_all_except(self.menu)
         mouse.locked = False
 
     def switch_to_play_mode(self):
         """Hiển thị HUD gameplay, ẩn menu."""
-        self.menu.hide()
-        self.pause.hide()
-        self.game_over.hide()
-        self.hud.show()
+        self._hide_all_except(self.hud)
         mouse.locked = True
 
     def switch_to_pause_mode(self):
-        """Hiển thị menu pause."""
+        """Hiển thị menu pause (hiển thị đè lên HUD)."""
         self.pause.show()
         mouse.locked = False
 
     def switch_to_game_over_mode(self, score, wave, kills, play_time):
         """Hiển thị màn hình game over với thống kê."""
+        self._hide_all_except(self.game_over)
         self.game_over.show_result(score, wave, kills, play_time)
         mouse.locked = False
 

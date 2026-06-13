@@ -42,32 +42,10 @@ class MainMenu(Entity):
             origin=(0, 0), color=color.light_gray
         )
 
-        # Nút Start Game
-        self.start_btn = Button(
-            text='START GAME', parent=self,
-            scale=(0.35, 0.08), y=0.06,
-            color=color.dark_gray,
-            highlight_color=color.lime,
-            on_click=self._on_start_click
-        )
-
-        # Nút Leaderboard
-        self.leaderboard_btn = Button(
-            text='LEADERBOARD', parent=self,
-            scale=(0.35, 0.08), y=-0.05,
-            color=color.dark_gray,
-            highlight_color=color.azure,
-            on_click=self.toggle_leaderboard
-        )
-
-        # Nút Quit
-        self.quit_btn = Button(
-            text='QUIT', parent=self,
-            scale=(0.35, 0.08), y=-0.16,
-            color=color.dark_gray,
-            highlight_color=color.red,
-            on_click=application.quit
-        )
+        # Các nút Menu
+        self.start_btn = self._create_menu_button('START GAME', 0.06, color.lime, self._on_start_click)
+        self.leaderboard_btn = self._create_menu_button('LEADERBOARD', -0.05, color.azure, self.toggle_leaderboard)
+        self.quit_btn = self._create_menu_button('QUIT', -0.16, color.red, application.quit)
 
         # Hướng dẫn phím
         self.controls_text = Text(
@@ -76,9 +54,24 @@ class MainMenu(Entity):
             origin=(0, 0), color=color.red
         )
 
-        # ==============================
-        # BẢNG XẾP HẠNG (ẩn mặc định)
-        # ==============================
+        # Khởi tạo bảng xếp hạng
+        self._setup_leaderboard()
+
+        # Callback
+        self.on_start_game = None
+
+    def _create_menu_button(self, text, y_pos, highlight_color, on_click):
+        """Helper tạo nút menu tránh lặp code."""
+        return Button(
+            text=text, parent=self,
+            scale=(0.35, 0.08), y=y_pos,
+            color=color.dark_gray,
+            highlight_color=highlight_color,
+            on_click=on_click
+        )
+
+    def _setup_leaderboard(self):
+        """Khởi tạo panel bảng xếp hạng (ẩn mặc định)."""
         self.leaderboard_panel = Entity(parent=self, enabled=False, z=-10)
 
         Entity(
@@ -109,9 +102,6 @@ class MainMenu(Entity):
             on_click=self.toggle_leaderboard
         )
         self.leaderboard_entries = []
-
-        # Callback
-        self.on_start_game = None
 
     def _on_start_click(self):
         """Xử lý khi nhấn Start Game."""
