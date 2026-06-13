@@ -33,3 +33,4 @@ Thumbs.db
 
 # --- Ursina cache ---
 *.bam
+models_compressed/
