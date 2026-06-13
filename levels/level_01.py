@@ -34,6 +34,7 @@ class Level01:
         self.wave_transition_timer = 0
         self.is_running = False
         self.player = None
+        self.boss_spawned_this_wave = False
 
         # Âm thanh qua 1 wave
         self.congratulations_sound = Audio(f'{SOUNDS_DIR}/congratulations.mp3', autoplay=False, loop=False)
@@ -58,6 +59,7 @@ class Level01:
         """Khởi tạo sẵn một lực lượng quái nhàn rỗi nằm ngầm dưới map."""
         from entities.enemies.zombie_base import ZombieBase
         from entities.enemies.zombie_fast import ZombieFast
+        from entities.enemies.zombie_boss import ZombieBoss
 
         # Tạo sẵn 40 Normal Zombie và 20 Fast Zombie ẩn dưới map
         for _ in range(40):
@@ -70,15 +72,23 @@ class Level01:
             z.despawn()
             self.zombie_pool.append(z)
 
-    def _get_zombie_from_pool(self, is_fast=False):
+        for _ in range(5):
+            z = ZombieBoss(position=Vec3(0, -999, 0))
+            z.despawn()
+            self.zombie_pool.append(z)
+
+    def _get_zombie_from_pool(self, is_fast=False, is_boss=False):
         """Tìm một thực thể đang rảnh trong pool phù hợp với chủng loại yêu cầu."""
         from entities.enemies.zombie_fast import ZombieFast
+        from entities.enemies.zombie_boss import ZombieBoss
 
         for zombie in self.zombie_pool:
             if not zombie.enabled:  # Kiểm tra trạng thái rảnh (đã despawn)
-                if is_fast and isinstance(zombie, ZombieFast):
+                if is_boss and isinstance(zombie, ZombieBoss):
                     return zombie
-                elif not is_fast and not isinstance(zombie, ZombieFast):
+                elif is_fast and isinstance(zombie, ZombieFast):
+                    return zombie
+                elif not is_boss and not is_fast and not isinstance(zombie, ZombieFast) and not isinstance(zombie, ZombieBoss):
                     return zombie
         return None
 
@@ -144,6 +154,7 @@ class Level01:
         self.is_wave_transitioning = False
         self.wave_transition_timer = 0
         self.is_running = True
+        self.boss_spawned_this_wave = False
         self._spawn_ammo_boxes()
 
     def stop_waves(self):
@@ -191,16 +202,26 @@ class Level01:
         )
 
         # Xác định loại zombie cần gọi
-        want_fast = (self.wave >= 1 and random.random() < 0.3)
+        want_boss = False
+        if self.wave % 2 == 0 and not getattr(self, 'boss_spawned_this_wave', False):
+            want_boss = True
+            self.boss_spawned_this_wave = True
+            
+        want_fast = False
+        if not want_boss:
+            want_fast = (self.wave >= 1 and random.random() < 0.5)
 
         # Lấy quái từ pool RAM
-        zombie = self._get_zombie_from_pool(is_fast=want_fast)
+        zombie = self._get_zombie_from_pool(is_fast=want_fast, is_boss=want_boss)
 
         # Nếu pool hết quái dự trữ, đúc khẩn cấp (fallback)
         if not zombie:
             from entities.enemies.zombie_base import ZombieBase
             from entities.enemies.zombie_fast import ZombieFast
-            if want_fast:
+            from entities.enemies.zombie_boss import ZombieBoss
+            if want_boss:
+                zombie = ZombieBoss(position=spawn_pos, player=self.player)
+            elif want_fast:
                 zombie = ZombieFast(position=spawn_pos, player=self.player)
             else:
                 zombie = ZombieBase(position=spawn_pos, player=self.player)
@@ -216,7 +237,13 @@ class Level01:
     def _on_zombie_death(self, zombie):
         """Callback khi zombie chết → thông báo lên GameManager."""
         from entities.enemies.zombie_fast import ZombieFast
-        points = 150 if isinstance(zombie, ZombieFast) else 100
+        from entities.enemies.zombie_boss import ZombieBoss
+        if isinstance(zombie, ZombieBoss):
+            points = 500
+        elif isinstance(zombie, ZombieFast):
+            points = 150
+        else:
+            points = 100
 
         if zombie in self.active_zombies:
             self.active_zombies.remove(zombie)
@@ -245,6 +272,7 @@ class Level01:
         self.spawn_timer = 0
         self.spawn_interval = max(1.0, 3.0 - (self.wave - 1) * 0.3)
         self.is_wave_transitioning = False
+        self.boss_spawned_this_wave = False
         if self.on_wave_start:
             self.on_wave_start(self.wave)
         self._spawn_ammo_boxes()

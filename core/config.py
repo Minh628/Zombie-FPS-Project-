@@ -62,6 +62,9 @@ ZOMBIE_BASE_DAMAGE = 10
 ZOMBIE_FAST_SPEED = 5
 ZOMBIE_FAST_HEALTH = 75
 ZOMBIE_FAST_DAMAGE = 10
+ZOMBIE_BOSS_SPEED = 1.5
+ZOMBIE_BOSS_HEALTH = 500
+ZOMBIE_BOSS_DAMAGE = 30
 ZOMBIE_SPAWN_INTERVAL = 3.0     # Giây giữa mỗi lần spawn
 
 # --- Cài đặt âm thanh ---
@@ -96,5 +99,12 @@ ZOMBIE_CONFIG = {
         'speed': ZOMBIE_FAST_SPEED,
         'damage': ZOMBIE_FAST_DAMAGE,
         'anims': {'walk': 'Run', 'attack': 'attack'}
+    },
+    'boss': {
+        'model': f'{MODELS_DIR}/zombie/zombie_boss.glb',
+        'health': ZOMBIE_BOSS_HEALTH,
+        'speed': ZOMBIE_BOSS_SPEED,
+        'damage': ZOMBIE_BOSS_DAMAGE,
+        'anims': {'walk': 'Walk', 'attack': 'Attack'}
     }
 }

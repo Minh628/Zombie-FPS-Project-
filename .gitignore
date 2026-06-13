@@ -9,6 +9,8 @@ __pycache__/
 dist/
 build/
 *.egg
+# --- Agents ---
+.Agents/
 
 # --- Virtual Environment ---
 venv/
