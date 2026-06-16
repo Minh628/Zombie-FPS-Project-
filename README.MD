@@ -1,86 +1,123 @@
-🧟‍♂️ Zombie FPS Project (Ursina Engine)
+# Báo cáo Đồ án: Game Bắn Zombie 3D với Python và Ursina
 
-Dự án game bắn súng góc nhìn thứ nhất (FPS) tiêu diệt Zombie, được xây dựng bằng Python và Ursina Engine. Tài liệu này mô tả cấu trúc thư mục tiêu chuẩn, giúp team phân chia công việc dễ dàng và tránh conflict code (xung đột mã nguồn) khi làm việc chung qua Git.
+## 1. Mở đầu
 
-📂 Cấu trúc thư mục (Folder Structure)
+### 1.1. Giới thiệu đề tài
+Đề tài là một trò chơi bắn zombie (Zombie FPS) góc nhìn thứ nhất. Người chơi sẽ vào vai một nhân vật sinh tồn, đối mặt với các đợt tấn công của zombie trong một môi trường 3D.
 
-zombie_fps_project/
+### 1.2. Lý do chọn đề tài
+Mục đích chính của việc chọn đề tài này là mong muốn tự tay xây dựng một trò chơi bằng ngôn ngữ lập trình Python nhằm phục vụ nhu cầu giải trí, đồng thời rèn luyện kỹ năng lập trình game và xử lý logic không gian 3D.
+
+### 1.3. Mục đích và mục tiêu của đề tài
+Mục tiêu cốt lõi của đề tài là xây dựng thành công một tựa game Python có khả năng hoạt động ổn định và mượt mà trong môi trường đồ họa 3D, ứng dụng được các kiến thức về lập trình hướng đối tượng và xử lý va chạm.
+
+### 1.4. Yêu cầu đồ án
+Để hoàn thiện, đồ án cần đáp ứng các yêu cầu sau:
+- Xây dựng bản đồ (map) 3D cho trò chơi.
+- Hiển thị mô hình zombie, súng và các hiệu ứng hình ảnh liên quan.
+- Cho phép người chơi di chuyển, tương tác và chiến đấu trong môi trường 3D.
+- Tích hợp hệ thống cấp độ (level) tăng dần độ khó.
+- Tích hợp hệ thống vật phẩm (máu, đạn) hỗ trợ người chơi.
+
+---
+
+## 2. Giới thiệu
+
+### 2.1. Ngôn ngữ lập trình Python
+Python là ngôn ngữ lập trình bậc cao, dễ đọc, dễ học và phổ biến nhờ hệ sinh thái thư viện khổng lồ. Mặc dù không phải là ngôn ngữ chuyên biệt tối ưu nhất cho game 3D (như C++ hay C#), Python vẫn cho phép phát triển game nhanh chóng và hiệu quả thông qua các engine hỗ trợ.
+
+### 2.2. Thư viện game Ursina Engine
+Ursina là một game engine 3D dành cho Python, được xây dựng dựa trên nền tảng Panda3D. Điểm mạnh của Ursina là cú pháp cực kỳ đơn giản, giúp nhà phát triển dễ dàng tạo cửa sổ game, tải mô hình 3D, xử lý ánh sáng và va chạm chỉ với vài dòng code.
+
+### 2.3. Các module chính của Ursina được sử dụng
+- **Entity**: Lớp cơ sở để tạo mọi vật thể trong game (người chơi, zombie, đạn, cảnh quan). Cung cấp các thuộc tính như vị trí (`position`), góc quay (`rotation`), và tỷ lệ (`scale`).
+- **FirstPersonController**: Module cung cấp sẵn hệ thống điều khiển góc nhìn thứ nhất, giúp xử lý di chuyển và góc nhìn camera một cách tiện lợi.
+- **Raycast / BoxCollider / MeshCollider**: Xử lý va chạm vật lý giữa đạn và zombie, hoặc người chơi và môi trường.
+- **Audio**: Module quản lý âm thanh (tiếng súng, tiếng zombie, nhạc nền).
+- **Text / Button**: Xử lý giao diện người dùng (UI) như hiển thị máu, điểm số và menu trò chơi.
+
+### 2.4. Trò chơi Bắn Zombie
+- **Bắt đầu**: Người chơi xuất hiện tại điểm sinh tồn trên bản đồ với vũ khí cơ bản.
+- **Tiến trình**: Zombie sẽ spawn (xuất hiện) và di chuyển về phía người chơi. Người chơi cần tiêu diệt chúng để ghi điểm và tồn tại.
+- **Lên Level**: Khi tiêu diệt đủ số lượng zombie hoặc sống sót qua một khoảng thời gian nhất định, trò chơi sẽ chuyển sang cấp độ tiếp theo với số lượng và độ trâu của zombie tăng lên.
+- **Kết thúc (Game Over)**: Trò chơi kết thúc khi lượng máu của người chơi giảm xuống 0 do bị zombie tấn công.
+
+---
+
+## 3. Tổng quan về đồ án
+
+### 3.1. Phân tích hệ thống
+
+#### 3.1.1. Mục tiêu chung
+Xây dựng một hệ thống game modular, dễ bảo trì và dễ mở rộng. Các logic về kết xuất đồ họa, xử lý AI, vật lý và quản lý dữ liệu được tách biệt.
+
+#### 3.1.2. Giới thiệu các Entity/Module chính
+- **`main.py`**: Điểm neo của chương trình, chịu trách nhiệm khởi tạo cửa sổ game Ursina, nạp cảnh chơi, và chạy vòng lặp game chính (update loop).
+- **`ui/`**: Chứa các đoạn code xử lý giao diện hiển thị cho người chơi (HUD: thanh máu, đạn dược, điểm số, màn hình menu/game over).
+- **`entities/`**: Chứa định nghĩa các thực thể trong game (Player, Zombie, Weapon, Bullet, Item). Mỗi thực thể sẽ xử lý logic riêng của nó (ví dụ: Zombie xử lý logic tìm đường và tấn công).
+- **`core/`**: Chứa các lớp quản lý luồng trò chơi cốt lõi (GameManager, LevelManager, CollisionSystem), điều phối sự kiện giữa các entity.
+
+#### 3.1.3. Dataflow của hệ thống
+- **Input**: Người chơi thao tác qua Chuột và Bàn phím.
+- **Xử lý (Core/Entities)**: `FirstPersonController` cập nhật vị trí; `Weapon` sinh ra đạn; `GameManager` kiểm tra va chạm (`Raycast`) giữa đạn và zombie; AI của zombie tính toán đường đi đuổi theo người chơi.
+- **Cập nhật dữ liệu**: Máu của zombie giảm, điểm số của người chơi tăng.
+- **Output (UI/Audio)**: Giao diện cập nhật điểm số, phát âm thanh bắn súng/zombie chết, cập nhật mô hình 3D trên màn hình.
+
+### 3.2. Sơ đồ chức năng
+```text
+Zombie-FPS-Project/
 │
-├── assets/                 # Nơi chứa toàn bộ tài nguyên tĩnh (Không chứa code)
-│   ├── models/             # File 3D (.obj, .gltf, .blend) - VD: zombie.obj, ak47.obj
-│   ├── textures/           # Hình ảnh bề mặt (.png, .jpg)
-│   ├── sounds/             # Âm thanh (.wav, .mp3) - VD: gunshot.wav
-│   ├── fonts/              # Font chữ cho UI
-│   └── images/             # Hình ảnh 2D dùng cho UI/HUD
+├── main.py (Khởi động trò chơi)
 │
-├── core/                   # Cấu hình và các logic quản lý hệ thống cốt lõi
-│   ├── config.py           # Lưu hằng số (Tốc độ game, độ phân giải, âm lượng,...)
-│   ├── engine_setup.py     # Khởi tạo engine Panda3D/Ursina và dọn dẹp cache
-│   ├── game_manager.py     # Quản lý state of game (Play, Pause, Game Over)
-│   ├── pathfinding.py      # Logic tìm đường cho Zombie (Vector Wall Sliding, A* Breadcrumb)
-│   └── utils.py            # Các hàm tính toán dùng chung
+├── core/ (Hệ thống điều phối cốt lõi)
+│   ├── game_manager (Quản lý trạng thái game)
+│   └── level_manager (Quản lý chuyển màn)
 │
-├── database/               # Logic quản lý Cơ sở dữ liệu (Database)
-│   ├── db_manager.py       # Các hàm kết nối, thêm/sửa/xóa (CRUD) dữ liệu
-│   └── models.py           # Định nghĩa cấu trúc bảng/Object (VD: Leaderboard, PlayerSave)
+├── entities/ (Thực thể 3D)
+│   ├── player (Người chơi)
+│   ├── zombie (Quái vật)
+│   └── weapon (Vũ khí)
 │
-├── data/                   # Nơi chứa file database thực tế (Không đẩy lên Git)
-│   └── save_data.db        # File CSDL SQLite
-│
-├── entities/               # Các thực thể tương tác trong game
-│   ├── player.py           # Kế thừa FirstPersonController, xử lý máu, di chuyển
-│   ├── weapon.py           # Lớp cơ sở xử lý súng (raycast, cooldown, nạp đạn)
-│   ├── enemies/            # Quản lý kẻ địch
-│   │   ├── zombie_base.py  # Class gốc của zombie (AI di chuyển, culling hoạt ảnh)
-│   │   ├── zombie_fast.py  # Biến thể zombie chạy nhanh
-│   │   └── zombie_boss.py  # Biến thể zombie trùm (Máu trâu, có hoạt ảnh riêng)
-│   ├── items/              # Vật phẩm tương tác nhặt được trên bản đồ
-│   │   └── ammo_box.py     # Hộp tiếp đạn cứu trợ
-│   └── weapons/            # Các loại vũ khí cụ thể kế thừa từ weapon.py
-│       ├── ak47.py         # Súng trường tấn công AK47
-│       ├── pistol.py       # Súng lục cầm tay
-│       └── knife.py        # Dao cận chiến
-│
-├── ui/                     # Giao diện người dùng
-│   ├── ui_manager.py       # Quản lý vòng đời và chuyển cảnh các giao diện UI
-│   ├── main_menu.py        # Màn hình bắt đầu game, bảng xếp hạng
-│   ├── hud.py              # Overlay trong game (thanh máu người chơi, số đạn, giáp)
-│   ├── pause_menu.py       # Trạng thái tạm dừng trò chơi (Resume, Restart, Main Menu)
-│   └── game_over_screen.py # Giao diện khi người chơi thua cuộc
-│
-├── levels/                 # Các màn chơi (Scenes)
-│   └── level_01.py         # Set up map, vị trí spawn quái, ánh sáng cho Level 1
-│
-├── .gitignore              # Bỏ qua các file rác, file DB nội bộ khi đẩy code lên Git
-├── requirements.txt        # Liệt kê các thư viện cần cài đặt
-├── main.py                 # Entry point: Nơi khởi tạo game và nối các module lại
-└── README.md               # Tài liệu dự án (File bạn đang đọc)
+└── ui/ (Giao diện người dùng)
+    ├── hud (Máu, đạn, điểm)
+    └── menu (Màn hình chính, Game Over)
+```
 
-🛠 Hướng dẫn chi tiết từng thư mục
+### 3.3. Thiết kế và Cài đặt
 
-1. assets/ (Tài nguyên)
+**Các thành phần chứa dữ liệu:**
+- **`assets/`**: Thư mục lưu trữ tài nguyên đa phương tiện như mô hình 3D, hình ảnh texture, và âm thanh.
+- **`database/`**: Nơi lưu trữ file cấu hình game hoặc lưu trạng thái điểm số cao (high score).
+- **`levels/`**: Chứa dữ liệu định nghĩa cho từng màn chơi (tọa độ spawn của zombie, vị trí tường chắn).
 
-Dành cho Game Designer / 3D Artist / Sound Engineer.
+#### 3.3.1. Giao diện (UI)
+Sử dụng các component UI của Ursina. Giao diện được thiết kế đơn giản, tập trung vào trải nghiệm bắn súng: chữ to rõ, thanh máu và điểm số trực quan, dễ theo dõi.
 
-Chỉ chứa file thiết kế, không chứa code Python. Mọi code trong dự án khi gọi tài nguyên đều phải trỏ đường dẫn về đây.
+#### 3.3.2. Cơ sở dữ liệu
+Hệ thống lưu trữ đơn giản để theo dõi tiến trình của người chơi, thông số vũ khí, điểm sát thương của từng loại zombie và mức điểm kỷ lục qua các lần chơi.
 
-2. database/ & data/ (Cơ sở dữ liệu)
+#### 3.3.3. Cấu trúc vòng lặp game
+Sử dụng hàm `update()` làm vòng lặp chính. Mỗi frame sẽ thực hiện:
+1. Nhận input từ người chơi.
+2. Cập nhật vị trí, góc nhìn người chơi.
+3. Chạy logic AI của zombie.
+4. Kiểm tra và xử lý va chạm vật lý (đạn, người chơi, zombie).
+5. Render lại khung hình.
 
-database/db_manager.py: Chứa logic kết nối CSDL. Ví dụ: Dùng sqlite3 để tạo bảng, lưu trữ điểm số cao (Highscore), hoặc trạng thái máu/vũ khí hiện tại của người chơi.
+#### 3.3.4. Thuật toán tìm đường của Zombie
+Zombie sử dụng thuật toán Vector Hướng cơ bản: Liên tục lấy vị trí của Player, tính toán vector hướng từ zombie đến Player, chuẩn hóa vector và di chuyển dần về phía người chơi thông qua góc xoay (`look_at()`) và di chuyển tới trước.
 
-data/: Thư mục này chỉ để ở local máy mỗi người, chứa các file .db hoặc .json. Nhớ thêm thư mục này vào .gitignore.
+---
 
-3. entities/ (Thực thể)
+## 4. Đánh giá kết quả
+- **Đạt được**: Trò chơi đã khởi chạy thành công, tải được mô hình 3D và môi trường. Người chơi có thể tương tác chơi game bình thường: di chuyển, ngắm bắn, hạ gục zombie, nhặt vật phẩm và thăng cấp (lên level) theo đúng các yêu cầu ban đầu.
+- **Hạn chế**: Cần tối ưu thêm thuật toán tìm đường để zombie có thể tránh chướng ngại vật mượt mà hơn.
 
-Nơi làm việc chính của Gameplay Developer.
+## 5. Kết luận và Hướng phát triển
+Đồ án đã xây dựng thành công một trò chơi bắn súng 3D cơ bản bằng ngôn ngữ Python, áp dụng tốt các khái niệm lập trình và quản lý tài nguyên.
 
-Mỗi vật thể sống hoặc tương tác được trong game (Player, Súng, Quái vật, Hộp tiếp đạn) đều là một Class riêng biệt kế thừa từ Entity của Ursina.
-Các vũ khí cụ thể nằm trong thư mục `weapons/` kế thừa từ `weapon.py`, còn vật phẩm nằm trong `items/`.
-
-4. ui/ (Giao diện)
-
-Dành cho UI/UX Developer.
-
-Chứa các màn hình hiển thị trong game. `ui_manager.py` sẽ chịu trách nhiệm bật tắt và chuyển đổi trạng thái giữa `main_menu.py`, `hud.py`, `pause_menu.py`, và `game_over_screen.py`.
-File hud.py sẽ giao tiếp với player.py để cập nhật thanh máu và đạn lên màn hình thông qua các hàm Observer/Callback.
-
+**Hướng phát triển trong tương lai:**
+- Bổ sung thêm nhiều bản đồ (map) đa dạng.
+- Thêm hệ thống vật phẩm rớt ra phong phú hơn.
+- Thiết kế thêm skin cho súng, người chơi và thiết kế các chủng loại zombie mới (như zombie đánh xa, tốc độ cao).
+- Cải thiện đồ họa, âm thanh và bổ sung cốt truyện.
