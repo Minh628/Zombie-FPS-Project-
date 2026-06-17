@@ -38,10 +38,13 @@ class AK47(WeaponBase):
             rotation=(0.468,75.711,10.480) # Xoay súng (thử -90 hoặc 90 nếu bị ngược)
         )
         
-        # Tạo Mesh Entity và dời nó để tâm súng trùng với Pivot
-        # Dựa trên test, model gốc to gấp hàng trăm lần (X=130) và bị lệch tâm
+        # Tạo Mesh Entity và dời nó để tâm súng trùng với Pivot.
+        # Lý do: Model 3D tải về từ mạng thường có tâm (origin) không nằm ở tay cầm.
+        # Ở đây, ta dùng "raw_center" (tâm vật lý đo được) nhân với "scale_factor" rồi dùng dấu "-" (phủ định)
+        # để kéo ngược mô hình về đúng trọng tâm gốc (0,0,0) của Pivot. 
+        # Điều này giúp khi súng xoay hoặc giật (recoil), nó sẽ xoay quanh tay cầm thay vì một điểm ngoài không gian.
         raw_center = Vec3(-26.0, 20.8, 6.8)
-        scale_factor = 0.02 # Tăng kích thước lên to gấp 3 lần cũ (0.02)
+        scale_factor = 0.02 # Thu nhỏ lại mô hình vì file .obj gốc rất khổng lồ
         
         self.gun_model = Entity(
             parent=self.pivot,
@@ -79,8 +82,11 @@ class AK47(WeaponBase):
             self._stop_burst()
 
     def _recoil(self):
-        """Hiệu ứng giật"""
-        # Súng giật lùi
+        """
+        Hiệu ứng giật súng (Recoil).
+        Bao gồm 3 phần: Giật lùi mô hình súng, hất camera lên trên, và tạo tia lửa nòng súng.
+        """
+        # 1. Súng giật lùi (đẩy theo trục Z âm) và nảy nhẹ lên (trục Y dương) tạo cảm giác phản lực
         self.animate_position(
             self._base_pos + Vec3(0, 0.05, -0.1), duration=0.05
         )

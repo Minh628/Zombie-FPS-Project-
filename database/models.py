@@ -2,7 +2,10 @@
 
 
 class LeaderboardEntry:
-    """Đại diện cho một bản ghi trong bảng Leaderboard."""
+    """
+    Đại diện cho một bản ghi trong bảng Leaderboard (Bảng xếp hạng).
+    Dữ liệu này được dùng để hiển thị top 10 người chơi có điểm số cao nhất trên màn hình Main Menu.
+    """
 
     def __init__(self, player_name, score, wave_reached=1, zombies_killed=0, play_time=0):
         self.player_name = player_name
@@ -17,7 +20,10 @@ class LeaderboardEntry:
 
 
 class PlayerSave:
-    """Đại diện cho một bản ghi lưu game của người chơi."""
+    """
+    Đại diện cho một bản ghi lưu trạng thái game của người chơi (Save Game).
+    Lưu trữ đầy đủ máu, đạn và wave hiện tại để có thể tiếp tục chơi vào lần sau.
+    """
 
     def __init__(self, player_name, health=100, current_ammo=30, total_ammo=120,
                  current_wave=1, score=0):

@@ -91,12 +91,15 @@ class Knife(WeaponBase):
         invoke(self._reset_shoot, delay=self.fire_rate)
 
     def _slash_effect(self):
-        """Hiệu ứng vung dao đâm/chém về phía trước chân thật."""
-        
+        """
+        Hoạt ảnh vung dao đâm/chém về phía trước chân thật.
+        Mô phỏng chuyển động của tay người: đâm tới nhanh (0.1s) và rút về chậm hơn (0.2s).
+        """
+        # 1. Lao dao tới phía trước (trục Z dương) và hơi chúc mũi dao xuống (xoay trục X 40 độ)
         self.animate_position(self._base_pos + Vec3(-0.1, -0.1, 0.4), duration=0.1)
         self.animate_rotation(self._base_rot + Vec3(40, -10, 0), duration=0.1)
         
-        # 2. Sau 0.1s, đưa dao quay trở lại vị trí và góc quay ban đầu một cách mượt mà
+        # 2. Sau 0.1s (khi đã đâm tới tối đa), đưa dao quay trở lại vị trí và góc quay ban đầu một cách mượt mà
         invoke(lambda: self.animate_position(self._base_pos, duration=0.2), delay=0.1)
         invoke(lambda: self.animate_rotation(self._base_rot, duration=0.2), delay=0.1)
 

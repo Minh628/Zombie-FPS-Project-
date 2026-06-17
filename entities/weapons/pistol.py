@@ -32,15 +32,18 @@ class Pistol(WeaponBase):
         # Xóa khối hình hộp chữ nhật mặc định
         self.model = None
         
-        # Trục Pivot để xoay đổi hướng súng lục (nòng hướng tới trước)
+        # Trục Pivot (bản lề) dùng để bọc model 3D lại, cho phép xoay nòng súng hướng về phía trước
+        # mà không làm ảnh hưởng đến code quản lý vị trí chung của WeaponBase.
         self.pivot = Entity(
             parent=self,
             rotation=(0, 80, 10) 
         )
         self.shoot_sound = Audio(f'{SOUNDS_DIR}/pistol_shoot.mp3', autoplay=False, loop=False)
         self.shoot_sound.volume = 0.9
+        
+        # Tâm vật lý thực tế của file 3D tải trên mạng thường bị lệch
         raw_center = Vec3(-3.75, -1.89, 2.91)
-        scale_factor = 0.04  # Căn chỉnh để súng không quá to
+        scale_factor = 0.04  # Căn chỉnh thu nhỏ để súng vừa vặn với tay người chơi
         
         self.gun_model = Entity(
             parent=self.pivot,
@@ -59,8 +62,11 @@ class Pistol(WeaponBase):
         except Exception:
             pass
     def _recoil(self):
-        """Hiệu ứng giật (Súng lục giật nhanh hơn, nhẹ hơn AK)"""
-        # Súng giật lùi
+        """
+        Hiệu ứng giật súng (Recoil).
+        Súng lục có khối lượng nhẹ nên độ giật lùi (trục Z âm) và thời gian phản hồi (duration) sẽ ngắn và nhanh hơn AK47.
+        """
+        # 1. Súng nảy nhẹ về phía sau
         self.animate_position(
             self._base_pos + Vec3(0, 0.03, -0.06), duration=0.03
         )

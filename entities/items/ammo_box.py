@@ -16,13 +16,15 @@ class AmmoBox(Entity):
         self.is_active = True
 
     def update(self):
+        """Được gọi tự động mỗi frame bởi Ursina."""
         if not self.is_active or not self.player:
             return
             
-        # Rotate for visual effect
+        # Quay vòng tròn quanh trục Y để tạo hiệu ứng thu hút sự chú ý
         self.rotation_y += 50 * time.dt
         
-        # Check collision with player
+        # Kiểm tra va chạm với người chơi dựa trên khoảng cách
+        # Bán kính 2.0 là khoảng cách đủ rộng để người chơi dễ dàng nhặt khi chạy ngang qua
         if distance(self.position, self.player.position) < 2.0:
             self.pickup()
             

@@ -56,10 +56,14 @@ class NavGraph:
                     self.edges[i].append((new_idx, dist))
 
     def get_nearest_visible_node(self, pos):
+        """
+        Tìm điểm nút gần nhất trên NavGraph mà không bị tường che khuất.
+        Được sử dụng làm điểm bắt đầu và kết thúc cho thuật toán tìm đường.
+        """
         if not self.nodes: return -1
         
-        # 1. Lọc thô bằng Bounding Box (Màng lọc tọa độ đơn giản)
-        # Khử 90% các phép tính Căn bậc 2 (distance) dư thừa
+        # 1. Lọc thô bằng Bounding Box (Màng lọc tọa độ hình vuông đơn giản)
+        # Bước này giúp loại bỏ 90% các điểm ở quá xa trước khi phải dùng hàm distance() (phép toán căn bậc 2 nặng nề)
         candidate_nodes = []
         for i, node in enumerate(self.nodes):
             if abs(node.x - pos.x) < 20 and abs(node.z - pos.z) < 20:
@@ -86,22 +90,30 @@ class NavGraph:
         return candidate_nodes[0][1] if candidate_nodes else -1
 
     def find_path(self, start_pos, end_pos):
+        """
+        Thuật toán A* (A-Star) tìm đường đi ngắn nhất từ start_pos đến end_pos.
+        Hoạt động dựa trên nguyên lý: Chi phí ước tính f(n) = g(n) [chi phí thực tế] + h(n) [khoảng cách chim bay tới đích].
+        """
         start_idx = self.get_nearest_visible_node(start_pos)
         end_idx = self.get_nearest_visible_node(end_pos)
         
         if start_idx == -1 or end_idx == -1:
             return []
             
-        # A* algorithm
+        # Sử dụng Priority Queue (Min-Heap) để luôn ưu tiên xét các điểm có tổng chi phí f(n) nhỏ nhất
         pq = []
         heapq.heappush(pq, (0, start_idx))
+        
+        # came_from: Dùng để truy vết lại đường đi sau khi đã đến đích
         came_from = {}
+        # cost_so_far: Lưu chi phí thực tế g(n) từ điểm xuất phát đến một điểm bất kỳ
         cost_so_far = {}
         
         came_from[start_idx] = None
         cost_so_far[start_idx] = 0
         
         while pq:
+            # Lấy ra điểm có mức độ ưu tiên cao nhất (chi phí thấp nhất)
             current_cost, current_node = heapq.heappop(pq)
             
             if current_node == end_idx:
