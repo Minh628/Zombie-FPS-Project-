@@ -189,7 +189,14 @@ class ZombieBase(Entity):
     # ==============================================================
 
     def update(self):
-        """Logic chính mỗi frame, phân rã thành các hàm chuyên biệt"""
+        """
+        Logic vòng đời chính của Zombie, được Ursina gọi liên tục mỗi frame.
+        Hàm này hoạt động như một bộ điều khiển trung tâm, gọi tuần tự các module chức năng:
+        - Culling: Ẩn/hiện mô hình theo góc camera để tối ưu FPS.
+        - Movement/AI: Tìm đường theo Player bằng Raycast/A* và xử lý trượt tường.
+        - Gravity: Áp dụng lực hút trái đất và dính chặt xuống sàn nhà.
+        - Attack: Tính toán cự ly để tung đòn đánh cận chiến.
+        """
         if not self.is_alive or not self.player:
             return
 
@@ -212,7 +219,13 @@ class ZombieBase(Entity):
         self._handle_attack(dist, stopping_distance)
 
     def _handle_culling(self, dist):
-        """Tối ưu GPU & CPU: Culling dựa trên khoảng cách VÀ góc nhìn Camera (Frustum Culling)"""
+        """
+        Tối ưu hóa sức mạnh phần cứng (Frustum & Distance Culling).
+        - Distance Culling: Zombie ở quá xa (dist > 55m) sẽ bị ẩn hoàn toàn mô hình 3D.
+        - Frustum Culling: Sử dụng Tích Vô Hướng (Dot Product) giữa hướng nhìn của camera và 
+          vị trí zombie. Nếu dot_product âm (< -0.2 tức zombie nằm sau lưng) thì tạm ẩn zombie.
+        Kỹ thuật này giúp Game có thể xử lý hàng trăm con zombie mà không bị sụt giảm FPS.
+        """
         from ursina import camera
         
         should_cull = False
@@ -281,7 +294,13 @@ class ZombieBase(Entity):
         self._apply_physics_movement(target_dir, move_amount, step_height)
 
     def _update_ai_target(self):
-        """AI Tầm nhìn (LOS) và Tìm đường (A*) - Phần 1 của Movement"""
+        """
+        Trí tuệ nhân tạo (AI): Quyết định điểm đến tiếp theo của Zombie.
+        - Quét tia (Raycast) Line of Sight (LOS): Kiểm tra xem có tường chắn giữa zombie và người chơi không.
+        - Nếu LOS trống (không có vách ngăn): Chạy đường chim bay thẳng về phía người chơi.
+        - Nếu bị ngăn cách bởi tường: Truy vấn đồ thị đường đi (NavGraph) lấy lộ trình A* (các waypoint),
+          sau đó zombie sẽ tự động dò dẫm đi theo từng hạt bánh mì (waypoint) một để vòng qua vật cản.
+        """
         from core.utils import get_map_entity
         map_ent = get_map_entity()
         
@@ -349,7 +368,14 @@ class ZombieBase(Entity):
         return target_pos
 
     def _apply_physics_movement(self, target_dir, move_amount, step_height):
-        """Trượt tường bằng tia Raycast Caching - Phần 2 của Movement"""
+        """
+        Hệ thống vật lý và trượt tường (Wall Sliding).
+        - Bắn 2 tia Raycast (Thấp - chân và Cao - thân) về phía trước để dò vật cản.
+        - Dùng kỹ thuật Throttling (chỉ quét tia mỗi 0.2s) rồi lưu kết quả (Caching) để đỡ lag.
+        - Nếu bị kẹt tường (tia đụng tường): Dùng pháp tuyến của bề mặt tường (world_normal) kết hợp
+          toán học vector (Cross Product/Dot Product) để bẻ cong hướng di chuyển, giúp zombie 
+          có thể "trượt" dọc theo bờ tường thay vì bị kẹt cứng lại một góc.
+        """
         from core.utils import get_map_entity
         map_ent = get_map_entity()
         
@@ -403,7 +429,11 @@ class ZombieBase(Entity):
                 self.position += self._cached_slide_dir * self.speed * time.dt
 
     def _handle_attack(self, dist, stopping_distance):
-        """Kích hoạt tấn công hoặc chạy hoạt ảnh di chuyển"""
+        """
+        Bộ kiểm soát tấn công và hoạt ảnh (Animation Controller).
+        - Nếu ở trong tầm đánh (attack_range) và delay xong: Thực thi hàm attack() gây sát thương.
+        - Nếu ở ngoài tầm đánh: Đảm bảo hoạt ảnh chạy/đi bộ (_walk_anim) được phát mượt mà.
+        """
         if dist <= self.attack_range and self.can_attack:
             self.attack()
         elif dist > stopping_distance and self.visible:
@@ -430,6 +460,12 @@ class ZombieBase(Entity):
         return None
 
     def _apply_gravity_and_ground(self):
+        """
+        Mô phỏng trọng lực (Gravity) và giữ zombie bám đất.
+        - Liên tục bắn một tia Raycast thẳng đứng xuống dưới gót chân để quét tìm địa hình (mặt đất/sàn).
+        - Nếu chạm đất: Gắn cứng trục Y của zombie theo độ dốc của sàn (Snap to ground).
+        - Nếu lơ lửng: Cộng dồn gia tốc rơi (vertical_velocity) tạo cảm giác rơi tự do vật lý.
+        """
         half_height = self._half_height()
         ray_origin = self.position + Vec3(0, half_height + 0.05, 0)
         
